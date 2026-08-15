@@ -940,7 +940,7 @@
 
     const xScale = s => PAD.l + (s - semMin) / (semMax - semMin) * chartW;
     const yScale = v => PAD.t + chartH - (v - mmMin) / (mmMax - mmMin) * chartH;
-    const pathFrom = pts => 'M' + pts.map(p => `${xScale(p.w).toFixed(1)},${yScale(p.v).toFixed(1)}`).join(' L');
+    const pathFrom = pts => 'M' + pts.map(p => xScale(p.w).toFixed(1)+','+yScale(p.v).toFixed(1)).join(' L');
 
     const p5pts  = sems.map(s => ({w:s, v:CRL_TABLE[s].p5}));
     const p50pts = sems.map(s => ({w:s, v:CRL_TABLE[s].p50}));
@@ -957,7 +957,7 @@
         'LCN ',crl_mm,' mm · EG estimada: ',crlToGA(crl_mm).weeks,'+',crlToGA(crl_mm).d,' sem',
         pct !== null ? e('span',{style:{marginLeft:8,fontWeight:700,color:colorP}},pct.toFixed(1),'%') : null
       ),
-      e('svg',{viewBox:`0 0 ${W} ${H}`,style:{width:'100%',height:'auto',overflow:'visible'}},
+      e('svg',{viewBox:"0 0 "+W+" "+H,style:{width:'100%',height:'auto',overflow:'visible'}},
         // Grid
         [0,25,50,75].map((v,i) =>
           e('line',{key:'g'+i,x1:PAD.l,y1:yScale(v),x2:W-PAD.r,y2:yScale(v),stroke:'#dce7ed',strokeWidth:1})
@@ -1239,7 +1239,7 @@
     const xScale = s => PAD.l + (s - semMin) / (semMax - semMin) * chartW;
     const yScale = v => PAD.t + chartH - (v - mmMin) / (mmMax - mmMin) * chartH;
 
-    const pathFrom = pts => 'M' + pts.map(d => `${xScale(d.w).toFixed(1)},${yScale(d.mm).toFixed(1)}`).join(' L');
+    const pathFrom = pts => 'M' + pts.map(d => xScale(d.w).toFixed(1)+','+yScale(d.mm).toFixed(1)).join(' L');
 
     // Punto del paciente
     const px = xScale(ga);
@@ -1261,7 +1261,7 @@
       e('div',{style:{fontSize:11,fontWeight:700,color:'#3b6f8a',marginBottom:4,textTransform:'uppercase',letterSpacing:'0.4px'}},
         dim,' — ',mm,' mm · ',e('span',{style:{color:colorP}},pct.toFixed(1),'%')
       ),
-      e('svg',{viewBox:`0 0 ${W} ${H}`,style:{width:'100%',height:'auto',overflow:'visible'}},
+      e('svg',{viewBox:"0 0 "+W+" "+H,style:{width:'100%',height:'auto',overflow:'visible'}},
         // Grid lines horizontales sutiles
         yTicks.map((t,i) =>
           e('line',{key:'gy'+i, x1:PAD.l, y1:yScale(t.v), x2:W-PAD.r, y2:yScale(t.v),
