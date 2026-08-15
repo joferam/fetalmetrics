@@ -1,0 +1,1330 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<title>FetalMetrics · Calculadora Obstétrica</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #f0f4f8; font-family: 'Inter', sans-serif; color: #0a2b3e; padding: 0 0 32px 0; }
+  .app-container { max-width: 600px; margin: 0 auto; padding: 20px 16px 40px 16px; }
+  .brand-header { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; margin-bottom: 8px; gap: 8px; }
+  .logo-area { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+  .app-name { font-size: 32px; font-weight: 800; background: linear-gradient(135deg, #0B5E7E, #1AA3B7); -webkit-background-clip: text; background-clip: text; color: transparent; letter-spacing: -0.5px; }
+  .badge { background: #e0ecf3; color: #0B5E7E; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 40px; }
+  .subhead { color: #2c5a6e; font-size: 14px; font-weight: 500; margin-bottom: 24px; border-left: 3px solid #1AA3B7; padding-left: 12px; }
+  .card { background: white; border-radius: 28px; padding: 20px 18px; margin-bottom: 24px; box-shadow: 0 8px 20px rgba(0,0,0,0.04); border: 1px solid #dce7ed; }
+  .card-title { font-size: 18px; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; color: #0f3b4f; }
+  .card-title-left { display: flex; align-items: center; gap: 8px; }
+  .ref-icon-btn { background: none; border: none; font-size: 16px; cursor: pointer; padding: 4px 8px; border-radius: 30px; transition: all 0.2s; color: #8aaec0; }
+  .ref-icon-btn:hover { background: #e4edf2; color: #0B5E7E; }
+  .lang-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; }
+  .lang-pill { background: #e4edf2; padding: 8px 6px; border-radius: 40px; font-size: 12px; font-weight: 600; color: #1a5d7a; cursor: pointer; transition: all 0.2s; text-align: center; border: 1px solid transparent; }
+  .lang-pill.active { background: #0B5E7E; color: white; }
+  label { font-size: 11px; font-weight: 700; color: #3b6f8a; letter-spacing: 0.4px; text-transform: uppercase; display: block; margin-bottom: 6px; }
+  .label-with-info { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
+  .label-with-info label { margin-bottom: 0; }
+  .info-icon { display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; background: #cbdde6; color: #0B5E7E; border-radius: 50%; font-size: 10px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+  .info-icon:hover { background: #1AA3B7; color: white; }
+  input { width: 100%; background: white; border: 1.5px solid #d4e2ea; border-radius: 18px; padding: 12px 14px; font-size: 15px; font-weight: 500; color: #0a2b3e; margin-bottom: 16px; outline: none; font-family: 'Inter', sans-serif; transition: border-color 0.2s, box-shadow 0.2s; }
+  input:focus { border-color: #1AA3B7; box-shadow: 0 0 0 3px rgba(26,163,183,0.1); }
+  input::placeholder { color: #b0c4d4; font-weight: 400; }
+  input.input-error { border-color: #e05260; box-shadow: 0 0 0 3px rgba(224,82,96,0.12); }
+  .field-error { font-size: 11px; font-weight: 600; color: #c0392b; margin-top: -12px; margin-bottom: 12px; padding-left: 4px; display: flex; align-items: center; gap: 4px; animation: slideDown 0.2s ease; }
+  @keyframes slideDown { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 16px; }
+  .grid-5 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; text-align: center; }
+  .eg-group { display: flex; gap: 12px; margin-bottom: 16px; }
+  .eg-field { flex: 1; }
+  .btn { background: #0B5E7E; border: none; border-radius: 44px; padding: 12px 18px; font-weight: 700; font-size: 15px; color: white; cursor: pointer; width: 100%; transition: 0.2s; margin-top: 4px; font-family: 'Inter', sans-serif; }
+  .btn:hover { background: #094c66; transform: translateY(-1px); }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+  .btn-outline { background: transparent; border: 1.5px solid #0B5E7E; color: #0B5E7E; }
+  .btn-outline:hover { background: #e2f0f5; }
+  .result-box { background: #f0f6fa; border-radius: 20px; padding: 18px; margin-top: 20px; border-left: 5px solid #1AA3B7; }
+  .result-big { font-size: 40px; font-weight: 800; color: #0B5E7E; line-height: 1.1; }
+  .result-note { font-size: 10px; color: #7aaabb; margin-top: 8px; padding-top: 8px; border-top: 1px solid #cde0e8; line-height: 1.5; }
+  hr { margin: 14px 0; border-color: #cde0e8; }
+  .eco-toggle { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; cursor: pointer; user-select: none; }
+  .eco-toggle-track { width: 36px; height: 20px; background: #c8dce6; border-radius: 20px; position: relative; transition: background 0.2s; flex-shrink: 0; }
+  .eco-toggle-track.on { background: #1AA3B7; }
+  .eco-toggle-thumb { width: 14px; height: 14px; background: white; border-radius: 50%; position: absolute; top: 3px; left: 3px; transition: left 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+  .eco-toggle-track.on .eco-toggle-thumb { left: 19px; }
+  .eco-toggle-label { font-size: 12px; font-weight: 600; color: #3b6f8a; }
+  .eco-weight-box { background: #f0f9fa; border: 1.5px solid #a8d8e4; border-radius: 18px; padding: 14px 16px; margin-bottom: 16px; animation: slideDown 0.2s ease; }
+  .eco-weight-box label { color: #0B5E7E; }
+  .eco-weight-box input { margin-bottom: 0; background: white; }
+  .promo-apps { background: linear-gradient(115deg, #E8F3F9 0%, #FFFFFF 100%); border-radius: 28px; padding: 18px 20px; border: 1px solid #c8dee8; margin-top: 8px; }
+  .promo-title { font-weight: 800; font-size: 18px; color: #135e7c; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+  .app-badge-list { display: flex; flex-wrap: wrap; gap: 14px; margin: 12px 0 8px; }
+  .app-item { background: white; padding: 10px 20px; border-radius: 60px; border: 1px solid #bddae7; font-weight: 700; display: inline-flex; align-items: center; gap: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.03); }
+  .store-icon { font-size: 20px; }
+  .promo-description { font-size: 12px; color: #4a627a; margin-top: 12px; padding-top: 10px; border-top: 1px solid #c8dee8; line-height: 1.4; }
+  .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.75); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+  .modal-card { background: white; max-width: 360px; width: 90%; border-radius: 28px; padding: 24px; text-align: left; }
+  .modal-card h3 { color: #0B5E7E; margin-bottom: 12px; font-size: 18px; }
+  .modal-card .ref-text { font-size: 11px; background: #f0f6fa; padding: 12px; border-radius: 16px; margin: 12px 0; color: #4a627a; line-height: 1.5; }
+  .disclaimer { background: #fef7e0; border-radius: 16px; padding: 14px; margin-top: 24px; font-size: 11px; color: #856404; border-left: 4px solid #ffc107; text-align: left; }
+  .footer-refs { text-align: center; font-size: 9px; color: #8aaec0; margin-top: 16px; }
+  .mode-buttons { display: flex; gap: 10px; margin-bottom: 18px; flex-wrap: wrap; }
+  .tooltip-modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+  .tooltip-card { background: white; max-width: 280px; width: 85%; border-radius: 24px; padding: 20px; text-align: center; }
+  .tooltip-card p { font-size: 14px; margin-bottom: 12px; color: #0a2b3e; }
+  .toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 9999; display: flex; flex-direction: column; align-items: center; gap: 8px; pointer-events: none; width: 90%; max-width: 380px; }
+  .toast { display: flex; align-items: center; gap: 10px; padding: 12px 18px; border-radius: 40px; font-size: 13px; font-weight: 600; box-shadow: 0 8px 24px rgba(0,0,0,0.15); pointer-events: auto; animation: toastIn 0.3s cubic-bezier(0.34,1.56,0.64,1); width: 100%; }
+  .toast.toast-error { background: #fff0f0; color: #c0392b; border: 1.5px solid #f5c6cb; }
+  .toast.toast-fade-out { animation: toastOut 0.3s ease forwards; }
+  @keyframes toastIn { from { opacity: 0; transform: translateY(-12px) scale(0.94); } to { opacity: 1; transform: translateY(0) scale(1); } }
+  @keyframes toastOut { from { opacity: 1; transform: translateY(0) scale(1); } to { opacity: 0; transform: translateY(-8px) scale(0.96); } }
+  /* Doppler module styling */
+  .doppler-menu-item { display: flex; align-items: center; gap: 14px; background: #f7fafc; border: 1px solid #dce7ed; border-radius: 20px; padding: 14px 16px; margin-bottom: 10px; cursor: pointer; transition: all 0.2s; }
+  .doppler-menu-item:hover { background: #e4edf2; border-color: #1AA3B7; }
+  .doppler-menu-icon { font-size: 24px; width: 42px; text-align: center; }
+  .doppler-menu-text { flex: 1; }
+  .doppler-menu-title { font-weight: 700; color: #0f3b4f; margin-bottom: 2px; font-size: 14px; }
+  .doppler-menu-sub { font-size: 11px; color: #6f9bb0; }
+  .doppler-back-btn { display: flex; align-items: center; gap: 6px; background: none; border: none; color: #0B5E7E; font-size: 13px; font-weight: 700; cursor: pointer; margin-bottom: 16px; padding: 4px 0; }
+  .ref-grid-doppler { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; text-align: center; margin-top: 12px; }
+  .ref-cell-doppler { background: white; border-radius: 10px; padding: 8px 4px; border: 1px solid #dce7ed; }
+  .ref-cell-doppler-label { font-size: 9px; color: #6f9bb0; font-weight: 700; }
+  .ref-cell-doppler-val { font-size: 13px; font-weight: 800; color: #0f3b4f; }
+  .doppler-note-box { margin-top: 10px; font-size: 11px; color: #4a627a; background: #f0f6fa; border-radius: 12px; padding: 10px; line-height: 1.5; }
+  .doppler-interp { margin-top: 10px; font-size: 13px; font-weight: 700; text-align: center; }
+  @media (max-width: 480px) { .app-name { font-size: 26px; } .result-big { font-size: 32px; } .lang-grid { grid-template-columns: repeat(2, 1fr); } .grid-4 { grid-template-columns: repeat(2, 1fr); } .grid-5 { grid-template-columns: repeat(5, 1fr); } }
+</style>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0B5E7E">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="FetalMetrics">
+</head>
+<body>
+<div id="root"></div>
+<script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.development.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.development.js"></script>
+<script>
+(function() {
+  if (typeof React === 'undefined' || typeof ReactDOM === 'undefined') {
+    document.getElementById('root').innerHTML = '<div style="padding:40px;text-align:center">Cargando...</div>';
+    return;
+  }
+
+  const { useState } = React;
+  const e = React.createElement;
+
+  // ==================== TRADUCCIONES 6 IDIOMAS ====================
+  const translations = {
+    es: {
+      app_sub: "Edad gestacional · Hadlock 4 · Percentiles OMS · Biometría fetal",
+      eg_title: "Edad Gestacional (EG)", fur_label: "Fecha de Última Regla (FUR)",
+      calc_eg_btn: "Calcular EG y FPP", mode_retro: "Calcular FUR desde EG",
+      retro_date: "Fecha ecografía", weeks: "semanas", days: "días",
+      calc_fur_btn: "Calcular FUR y FPP", fur_result: "FUR estimada", fpp_result: "Fecha Probable Parto",
+      growth_title: "Crecimiento Fetal",
+      tab_oms: "Percentil OMS (Peso + EG)", tab_hadlock: "Hadlock 4 (BPD+HC+AC+FL)",
+      weeks_label: "Semanas EG", days_label: "Días EG",
+      weight_label: "Peso fetal (gramos)", calc_perc_btn: "Calcular percentil OMS",
+      bpd_mm: "BPD", hc_mm: "HC", ac_mm: "AC", fl_mm: "FL",
+      calc_had_btn: "Estimar peso (Hadlock 4) + percentil OMS",
+      percentil_text: "Percentil OMS", efw_text: "Peso estimado (Hadlock 4)",
+      eco_toggle: "Ingresar peso del ecógrafo directamente",
+      eco_weight_label: "Peso ecógrafo (gramos)",
+      eco_weight_placeholder: "Ej: 610",
+      result_note_hadlock: "Percentil OMS calculado sobre peso Hadlock 4 · Curvas Kiserud 2017",
+      result_note_oms: "Percentil OMS calculado sobre peso ingresado · Curvas Kiserud 2017",
+      result_note_eco: "Percentil OMS calculado sobre peso del ecógrafo · Curvas Kiserud 2017",
+      ver_ref: "📚 Ver referencia",
+      promo_title: "Descubre nuestras aplicaciones aliadas",
+      app_semanas: "Mis Semanas", app_ciclo: "Mi Ciclo",
+      app_semanas_desc: "Seguimiento semana a semana de tu embarazo. Información sobre desarrollo fetal, cambios en tu cuerpo y consejos útiles.",
+      app_ciclo_desc: "Control de ciclo menstrual, predicción de días fértiles, registro de síntomas y calendario de ovulación.",
+      available_on: "Disponible en iOS y Android", ga_weeks: "EG actual",
+      disclaimer_title: "Aviso importante",
+      disclaimer_text: "Esta aplicación es una herramienta de referencia educativa basada en literatura médica. NO reemplaza el juicio clínico ni la evaluación médica profesional. Siempre consulte con su médico, matrona o especialista en salud perinatal antes de tomar decisiones médicas.",
+      ref_eg_title: "Referencia - Edad Gestacional",
+      ref_eg_text: "Regla de Naegele. Cunningham FG, et al. Williams Obstetrics. 26th ed. McGraw-Hill; 2022.",
+      ref_oms_title: "Referencia - Percentiles OMS",
+      ref_oms_text: "Kiserud T, Piaggio G, Carroli G, et al. The World Health Organization Fetal Growth Charts: A Multinational Longitudinal Study. PLoS Med. 2017;14(1):e1002220.",
+      ref_hadlock_title: "Referencia - Hadlock 4 (estimación de peso)",
+      ref_hadlock_text: "Hadlock FP, Harrist RB, Sharman RS, Deter RL, Park SK. Estimation of fetal weight with the use of head, body, and femur measurements. Am J Obstet Gynecol. 1985;151(3):333-337. Fórmula: log10(EFW) = 1.3596 − 0.00386×AC×FL + 0.0064×HC + 0.00061×BPD×AC + 0.0424×AC + 0.174×FL. El percentil se calcula sobre el peso estimado usando las curvas OMS/Kiserud 2017.",
+      tooltip_bpd: "BPD = Diámetro Biparietal. Medida transversal del cráneo fetal a nivel del tálamo.",
+      biom_title: "Biometría Fetal OMS",
+      biom_sub: "Percentil individual por medida · Ingresa solo las que tengas disponibles",
+      biom_calc_btn: "Calcular percentiles OMS",
+      biom_err_required: "Ingresa al menos una medida en milímetros",
+      biom_ref_note: "Curvas OMS Kiserud 2017",
+      ref_biom_title: "Referencia - Biometría Fetal OMS",
+      ref_biom_text: "Kiserud T, Piaggio G, Carroli G, et al. WHO Fetal Growth Charts. PLoS Med. 2017;14(1):e1002220. Coeficientes: github.com/jcarvalho45/whoFetalGrowth",
+      tooltip_hc: "HC = Circunferencia Cefálica. Perímetro de la cabeza fetal.",
+      tooltip_ac: "AC = Circunferencia Abdominal. Perímetro del abdomen fetal.",
+      tooltip_fl: "FL = Longitud del Fémur. Medida del hueso del muslo fetal.",
+      close: "Cerrar",
+      crl_title: "LCN · 1er Trimestre",
+      crl_sub: "Longitud cráneo-nalga · Semana 6 a 14 · Datación y percentil",
+      crl_tab_crl2ga: "LCN → EG",
+      crl_tab_ga2crl: "EG → LCN esperada",
+      crl_input_label: "LCN medida (mm)",
+      crl_calc_btn: "Calcular EG y percentil",
+      crl_calc_ga_btn: "Calcular LCN esperada",
+      crl_err_range: "LCN debe estar entre 3 y 100 mm (semana 6-14)",
+      crl_err_ga_range: "EG debe estar entre 6 y 14 semanas",
+      crl_result_mm: "LCN",
+      crl_result_perc: "Percentil",
+      crl_result_expected: "LCN esperada (p50)",
+      crl_note: "Fórmula Robinson & Fleming 1975 · Referencia FMF e ISUOG",
+      crl_ref_title: "Referencia - LCN / CRL",
+      crl_ref_text: "Robinson HP, Fleming JE. A critical evaluation of sonar crown-rump length measurements. Br J Obstet Gynaecol. 1975;82(9):702-710. Fórmula: GA(días) = 8.052 × √(LCN mm × 1.037) + 23.73. Referencia estándar FMF e ISUOG.",
+      err_fur_future: "La FUR no puede ser una fecha futura", err_fur_required: "Ingresa la fecha de la última regla",
+      err_echo_required: "Ingresa la fecha de la ecografía", err_weeks_required: "Ingresa las semanas de EG",
+      err_days_range: "Los días deben estar entre 0 y 6", err_ga_range: "La EG debe estar entre 14 y 40 semanas",
+      err_weight_min: "Ingresa un peso fetal válido (mínimo 100 g)",
+      err_eco_weight_min: "Ingresa el peso del ecógrafo (mínimo 100 g)",
+      err_biometry_required: "Completa BPD, HC, AC y FL en milímetros",
+      err_calc: "Error en el cálculo. Verifica los datos ingresados.",
+    },
+    en: {
+      app_sub: "Gestational age · Hadlock 4 · WHO percentiles · Fetal biometry",
+      eg_title: "Gestational Age (GA)", fur_label: "Last Menstrual Period (LMP)",
+      calc_eg_btn: "Calculate GA & EDD", mode_retro: "Calculate LMP from GA",
+      retro_date: "Ultrasound date", weeks: "weeks", days: "days",
+      calc_fur_btn: "Calculate LMP & EDD", fur_result: "Estimated LMP", fpp_result: "Estimated Due Date",
+      growth_title: "Fetal Growth",
+      tab_oms: "WHO percentile (Weight + GA)", tab_hadlock: "Hadlock 4 (BPD+HC+AC+FL)",
+      weeks_label: "GA weeks", days_label: "GA days",
+      weight_label: "Fetal weight (grams)", calc_perc_btn: "Calculate WHO percentile",
+      bpd_mm: "BPD", hc_mm: "HC", ac_mm: "AC", fl_mm: "FL",
+      calc_had_btn: "Estimate weight (Hadlock 4) + WHO percentile",
+      percentil_text: "WHO percentile", efw_text: "Estimated weight (Hadlock 4)",
+      eco_toggle: "Enter ultrasound weight directly",
+      eco_weight_label: "Ultrasound weight (grams)",
+      eco_weight_placeholder: "e.g. 610",
+      result_note_hadlock: "WHO percentile calculated from Hadlock 4 weight · Kiserud 2017 curves",
+      result_note_oms: "WHO percentile calculated from entered weight · Kiserud 2017 curves",
+      result_note_eco: "WHO percentile calculated from ultrasound weight · Kiserud 2017 curves",
+      ver_ref: "📚 View reference",
+      promo_title: "Discover our partner apps",
+      app_semanas: "My Weeks", app_ciclo: "My Cycle",
+      app_semanas_desc: "Week-by-week pregnancy tracking. Fetal development, body changes, and helpful tips.",
+      app_ciclo_desc: "Menstrual cycle tracking, fertile days prediction, symptom logging, and ovulation calendar.",
+      available_on: "Available on iOS & Android", ga_weeks: "Current GA",
+      disclaimer_title: "Important notice",
+      disclaimer_text: "This application is an educational reference tool based on medical literature. It does NOT replace clinical judgment or professional medical evaluation. Always consult your physician, midwife, or perinatal health specialist before making medical decisions.",
+      ref_eg_title: "Reference - Gestational Age",
+      ref_eg_text: "Naegele's rule. Cunningham FG, Leveno KJ, et al. Williams Obstetrics. 26th ed. McGraw-Hill; 2022.",
+      ref_oms_title: "Reference - WHO Percentiles",
+      ref_oms_text: "Kiserud T, Piaggio G, Carroli G, et al. The World Health Organization Fetal Growth Charts: A Multinational Longitudinal Study. PLoS Med. 2017;14(1):e1002220.",
+      ref_hadlock_title: "Reference - Hadlock 4 (weight estimation)",
+      ref_hadlock_text: "Hadlock FP, Harrist RB, Sharman RS, Deter RL, Park SK. Estimation of fetal weight. Am J Obstet Gynecol. 1985;151(3):333-337. Formula: log10(EFW) = 1.3596 − 0.00386×AC×FL + 0.0064×HC + 0.00061×BPD×AC + 0.0424×AC + 0.174×FL. WHO percentile calculated using Kiserud 2017 curves.",
+      tooltip_bpd: "BPD = Biparietal diameter. Transverse measurement of the fetal skull at thalamus level.",
+      biom_title: "WHO Fetal Biometry",
+      biom_sub: "Individual percentile per measurement · Enter only those available",
+      biom_calc_btn: "Calculate WHO percentiles",
+      biom_err_required: "Enter at least one measurement in millimeters",
+      biom_ref_note: "WHO Kiserud 2017 curves",
+      ref_biom_title: "Reference - WHO Fetal Biometry",
+      ref_biom_text: "Kiserud T, Piaggio G, Carroli G, et al. WHO Fetal Growth Charts. PLoS Med. 2017;14(1):e1002220. Coefficients: github.com/jcarvalho45/whoFetalGrowth",
+      tooltip_hc: "HC = Head circumference. Perimeter of the fetal head.",
+      tooltip_ac: "AC = Abdominal circumference. Perimeter of the fetal abdomen.",
+      tooltip_fl: "FL = Femur length. Measurement of the fetal thigh bone.",
+      close: "Close",
+      crl_title: "CRL · 1st Trimester",
+      crl_sub: "Crown-rump length · Week 6 to 14 · Dating and percentile",
+      crl_tab_crl2ga: "CRL → GA",
+      crl_tab_ga2crl: "GA → Expected CRL",
+      crl_input_label: "Measured CRL (mm)",
+      crl_calc_btn: "Calculate GA and percentile",
+      crl_calc_ga_btn: "Calculate expected CRL",
+      crl_err_range: "CRL must be between 3 and 100 mm (weeks 6-14)",
+      crl_err_ga_range: "GA must be between 6 and 14 weeks",
+      crl_result_mm: "CRL",
+      crl_result_perc: "Percentile",
+      crl_result_expected: "Expected CRL (p50)",
+      crl_note: "Robinson & Fleming 1975 · FMF and ISUOG reference",
+      crl_ref_title: "Reference - CRL",
+      crl_ref_text: "Robinson HP, Fleming JE. Br J Obstet Gynaecol. 1975;82(9):702-710. Formula: GA(days) = 8.052 × √(CRL mm × 1.037) + 23.73. Standard FMF and ISUOG reference.",
+      err_fur_future: "LMP cannot be a future date", err_fur_required: "Enter the LMP date",
+      err_echo_required: "Enter the ultrasound date", err_weeks_required: "Enter GA in weeks",
+      err_days_range: "Days must be between 0 and 6", err_ga_range: "GA must be between 14 and 40 weeks",
+      err_weight_min: "Enter a valid fetal weight (minimum 100 g)",
+      err_eco_weight_min: "Enter the ultrasound weight (minimum 100 g)",
+      err_biometry_required: "Complete BPD, HC, AC and FL in millimeters",
+      err_calc: "Calculation error. Please check your data.",
+    },
+    pt: {
+      app_sub: "Idade gestacional · Hadlock 4 · Percentis OMS · Biometria fetal",
+      eg_title: "Idade Gestacional (IG)", fur_label: "Data da Última Menstruação (DUM)",
+      calc_eg_btn: "Calcular IG e DPP", mode_retro: "Calcular DUM a partir da IG",
+      retro_date: "Data da ecografia", weeks: "semanas", days: "dias",
+      calc_fur_btn: "Calcular DUM e DPP", fur_result: "DUM estimada", fpp_result: "Data Provável do Parto",
+      growth_title: "Crescimento Fetal",
+      tab_oms: "Percentil OMS (Peso + IG)", tab_hadlock: "Hadlock 4 (DBP+HC+CA+CF)",
+      weeks_label: "Semanas IG", days_label: "Dias IG",
+      weight_label: "Peso fetal (gramas)", calc_perc_btn: "Calcular percentil OMS",
+      bpd_mm: "DBP", hc_mm: "HC", ac_mm: "CA", fl_mm: "CF",
+      calc_had_btn: "Estimar peso (Hadlock 4) + percentil OMS",
+      percentil_text: "Percentil OMS", efw_text: "Peso estimado (Hadlock 4)",
+      eco_toggle: "Inserir peso do ecógrafo diretamente",
+      eco_weight_label: "Peso do ecógrafo (gramas)",
+      eco_weight_placeholder: "Ex: 610",
+      result_note_hadlock: "Percentil OMS calculado sobre peso Hadlock 4 · Curvas Kiserud 2017",
+      result_note_oms: "Percentil OMS calculado sobre peso inserido · Curvas Kiserud 2017",
+      result_note_eco: "Percentil OMS calculado sobre peso do ecógrafo · Curvas Kiserud 2017",
+      ver_ref: "📚 Ver referência",
+      promo_title: "Conheça nossos apps parceiros",
+      app_semanas: "Minhas Semanas", app_ciclo: "Meu Ciclo",
+      app_semanas_desc: "Acompanhamento semana a semana da sua gravidez.",
+      app_ciclo_desc: "Controle do ciclo menstrual, previsão de dias férteis.",
+      available_on: "Disponível em iOS e Android", ga_weeks: "IG atual",
+      disclaimer_title: "Aviso importante",
+      disclaimer_text: "Ferramenta educacional. NÃO substitui o julgamento clínico. Consulte sempre seu médico.",
+      ref_eg_title: "Referência - Idade Gestacional", ref_eg_text: "Regra de Naegele. Williams Obstetrics. 26th ed.",
+      ref_oms_title: "Referência - Percentis OMS", ref_oms_text: "Kiserud T, et al. PLoS Med. 2017;14(1):e1002220.",
+      ref_hadlock_title: "Referência - Hadlock 4", ref_hadlock_text: "Hadlock FP, et al. Am J Obstet Gynecol. 1985;151(3):333-337.",
+      tooltip_bpd: "DBP = Diâmetro Biparietal. Medida transversal do crânio fetal.",
+      biom_title: "Biometria Fetal OMS",
+      biom_sub: "Percentil individual por medida · Insira apenas as disponíveis",
+      biom_calc_btn: "Calcular percentis OMS",
+      biom_err_required: "Insira pelo menos uma medida em milímetros",
+      biom_ref_note: "Curvas OMS Kiserud 2017",
+      ref_biom_title: "Referência - Biometria Fetal OMS",
+      ref_biom_text: "Kiserud T, et al. WHO Fetal Growth Charts. PLoS Med. 2017;14(1):e1002220.",
+      tooltip_hc: "HC = Circunferência Cefálica. Perímetro da cabeça fetal.",
+      tooltip_ac: "CA = Circunferência Abdominal. Perímetro do abdômen fetal.",
+      tooltip_fl: "CF = Comprimento do Fêmur. Medida do osso da coxa fetal.",
+      close: "Fechar",
+      crl_title: "CCN · 1º Trimestre",
+      crl_sub: "Comprimento cabeça-nádega · Semana 6 a 14",
+      crl_tab_crl2ga: "CCN → IG",
+      crl_tab_ga2crl: "IG → CCN esperado",
+      crl_input_label: "CCN medido (mm)",
+      crl_calc_btn: "Calcular IG e percentil",
+      crl_calc_ga_btn: "Calcular CCN esperado",
+      crl_err_range: "CCN deve estar entre 3 e 100 mm",
+      crl_err_ga_range: "IG deve estar entre 6 e 14 semanas",
+      crl_result_mm: "CCN",
+      crl_result_perc: "Percentil",
+      crl_result_expected: "CCN esperado (p50)",
+      crl_note: "Fórmula Robinson & Fleming 1975 · FMF e ISUOG",
+      crl_ref_title: "Referência - CCN / CRL",
+      crl_ref_text: "Robinson HP, Fleming JE. Br J Obstet Gynaecol. 1975;82(9):702-710.",
+      err_fur_future: "A DUM não pode ser futura", err_fur_required: "Insira a data da DUM",
+      err_echo_required: "Insira a data da ecografia", err_weeks_required: "Insira as semanas de IG",
+      err_days_range: "Os dias devem estar entre 0 e 6", err_ga_range: "A IG deve estar entre 14 e 40 semanas",
+      err_weight_min: "Insira um peso válido (mínimo 100 g)",
+      err_eco_weight_min: "Insira o peso do ecógrafo (mínimo 100 g)",
+      err_biometry_required: "Preencha DBP, HC, CA e CF em milímetros",
+      err_calc: "Erro no cálculo. Verifique os dados.",
+    },
+    fr: {
+      app_sub: "Âge gestationnel · Hadlock 4 · Percentiles OMS · Biométrie fœtale",
+      eg_title: "Âge Gestationnel (AG)", fur_label: "Date des dernières règles (DDR)",
+      calc_eg_btn: "Calculer AG & DPA", mode_retro: "Calculer DDR depuis AG",
+      retro_date: "Date échographie", weeks: "semaines", days: "jours",
+      calc_fur_btn: "Calculer DDR & DPA", fur_result: "DDR estimée", fpp_result: "Date Prévue d'Accouchement",
+      growth_title: "Croissance Fœtale",
+      tab_oms: "Percentile OMS (Poids + AG)", tab_hadlock: "Hadlock 4 (BPD+PC+PA+LF)",
+      weeks_label: "Semaines AG", days_label: "Jours AG",
+      weight_label: "Poids fœtal (grammes)", calc_perc_btn: "Calculer percentile OMS",
+      bpd_mm: "BPD", hc_mm: "PC", ac_mm: "PA", fl_mm: "LF",
+      calc_had_btn: "Estimer poids (Hadlock 4) + percentile OMS",
+      percentil_text: "Percentile OMS", efw_text: "Poids estimé (Hadlock 4)",
+      eco_toggle: "Saisir le poids de l'échographe directement",
+      eco_weight_label: "Poids échographe (grammes)",
+      eco_weight_placeholder: "Ex: 610",
+      result_note_hadlock: "Percentile OMS calculé sur poids Hadlock 4 · Courbes Kiserud 2017",
+      result_note_oms: "Percentile OMS calculé sur poids saisi · Courbes Kiserud 2017",
+      result_note_eco: "Percentile OMS calculé sur poids échographe · Courbes Kiserud 2017",
+      ver_ref: "📚 Voir référence",
+      promo_title: "Découvrez nos applis partenaires",
+      app_semanas: "Mes Semaines", app_ciclo: "Mon Cycle",
+      app_semanas_desc: "Suivi semaine par semaine de votre grossesse.",
+      app_ciclo_desc: "Suivi du cycle menstruel et calendrier d'ovulation.",
+      available_on: "Disponible sur iOS et Android", ga_weeks: "AG actuel",
+      disclaimer_title: "Avis important",
+      disclaimer_text: "Outil éducatif. Ne remplace pas l'avis médical professionnel.",
+      ref_eg_title: "Référence - Âge Gestationnel", ref_eg_text: "Règle de Naegele. Williams Obstetrics, 26e éd.",
+      ref_oms_title: "Référence - OMS", ref_oms_text: "Kiserud T, et al. PLoS Med. 2017;14(1):e1002220.",
+      ref_hadlock_title: "Référence - Hadlock 4", ref_hadlock_text: "Hadlock FP, et al. Am J Obstet Gynecol. 1985;151(3):333-337.",
+      tooltip_bpd: "BPD = Diamètre bipariétal. Mesure transversale du crâne fœtal.",
+      biom_title: "Biométrie Fœtale OMS",
+      biom_sub: "Percentile individuel par mesure · Entrez uniquement celles disponibles",
+      biom_calc_btn: "Calculer percentiles OMS",
+      biom_err_required: "Entrez au moins une mesure en millimètres",
+      biom_ref_note: "Courbes OMS Kiserud 2017",
+      ref_biom_title: "Référence - Biométrie Fœtale OMS",
+      ref_biom_text: "Kiserud T, et al. WHO Fetal Growth Charts. PLoS Med. 2017;14(1):e1002220.",
+      tooltip_hc: "PC = Périmètre crânien. Tour de tête fœtal.",
+      tooltip_ac: "PA = Périmètre abdominal. Tour de ventre fœtal.",
+      tooltip_fl: "LF = Longueur du fémur. Os de la cuisse.",
+      close: "Fermer",
+      crl_title: "LCC · 1er Trimestre",
+      crl_sub: "Longueur cranio-caudale · Semaine 6 à 14",
+      crl_tab_crl2ga: "LCC → AG",
+      crl_tab_ga2crl: "AG → LCC attendue",
+      crl_input_label: "LCC mesurée (mm)",
+      crl_calc_btn: "Calculer AG et percentile",
+      crl_calc_ga_btn: "Calculer LCC attendue",
+      crl_err_range: "LCC doit être entre 3 et 100 mm",
+      crl_err_ga_range: "AG doit être entre 6 et 14 semaines",
+      crl_result_mm: "LCC",
+      crl_result_perc: "Percentile",
+      crl_result_expected: "LCC attendue (p50)",
+      crl_note: "Robinson & Fleming 1975 · FMF et ISUOG",
+      crl_ref_title: "Référence - LCC / CRL",
+      crl_ref_text: "Robinson HP, Fleming JE. Br J Obstet Gynaecol. 1975;82(9):702-710.",
+      err_fur_future: "La DDR ne peut pas être future", err_fur_required: "Entrez la DDR",
+      err_echo_required: "Entrez la date d'échographie", err_weeks_required: "Entrez les semaines d'AG",
+      err_days_range: "Les jours doivent être entre 0 et 6", err_ga_range: "L'AG doit être entre 14 et 40 semaines",
+      err_weight_min: "Entrez un poids valide (minimum 100 g)",
+      err_eco_weight_min: "Entrez le poids de l'échographe (minimum 100 g)",
+      err_biometry_required: "Complétez BPD, PC, PA et LF en millimètres",
+      err_calc: "Erreur de calcul. Vérifiez les données.",
+    },
+    de: {
+      app_sub: "Gestationsalter · Hadlock 4 · WHO Perzentile · Fetale Biometrie",
+      eg_title: "Gestationsalter (GA)", fur_label: "Letzte Menstruation (LMP)",
+      calc_eg_btn: "GA & ET berechnen", mode_retro: "LMP aus GA berechnen",
+      retro_date: "Ultraschall Datum", weeks: "Wochen", days: "Tage",
+      calc_fur_btn: "LMP & ET berechnen", fur_result: "Geschätzte LMP", fpp_result: "Entbindungstermin",
+      growth_title: "Fetales Wachstum",
+      tab_oms: "WHO Perzentil (Gewicht + GA)", tab_hadlock: "Hadlock 4 (BPD+KU+AU+FL)",
+      weeks_label: "GA Wochen", days_label: "GA Tage",
+      weight_label: "Gewicht (g)", calc_perc_btn: "WHO Perzentil berechnen",
+      bpd_mm: "BPD", hc_mm: "KU", ac_mm: "AU", fl_mm: "FL",
+      calc_had_btn: "Gewicht schätzen (Hadlock 4) + WHO Perzentil",
+      percentil_text: "WHO Perzentil", efw_text: "Geschätztes Gewicht (Hadlock 4)",
+      eco_toggle: "Ultraschallgewicht direkt eingeben",
+      eco_weight_label: "Ultraschallgewicht (g)",
+      eco_weight_placeholder: "z.B. 610",
+      result_note_hadlock: "WHO-Perzentil berechnet auf Hadlock-4-Gewicht · Kiserud 2017",
+      result_note_oms: "WHO-Perzentil berechnet auf eingegebenes Gewicht · Kiserud 2017",
+      result_note_eco: "WHO-Perzentil berechnet auf Ultraschallgewicht · Kiserud 2017",
+      ver_ref: "📚 Referenz ansehen",
+      promo_title: "Partner-Apps entdecken",
+      app_semanas: "Meine Wochen", app_ciclo: "Mein Zyklus",
+      app_semanas_desc: "Wöchentliche Schwangerschaftsverfolgung.",
+      app_ciclo_desc: "Menstruationszyklus-Tracking und Ovulationskalender.",
+      available_on: "Verfügbar auf iOS & Android", ga_weeks: "Aktuelles GA",
+      disclaimer_title: "Wichtiger Hinweis",
+      disclaimer_text: "Nur zu Bildungszwecken. Kein Ersatz für ärztliche Beratung.",
+      ref_eg_title: "Referenz - Gestationsalter", ref_eg_text: "Naegele-Regel. Williams Obstetrics, 26. Aufl.",
+      ref_oms_title: "Referenz - WHO", ref_oms_text: "Kiserud T, et al. PLoS Med. 2017;14(1):e1002220.",
+      ref_hadlock_title: "Referenz - Hadlock 4", ref_hadlock_text: "Hadlock FP, et al. Am J Obstet Gynecol. 1985;151(3):333-337.",
+      tooltip_bpd: "BPD = Biparietaler Durchmesser. Quermessung des fetalen Schädels.",
+      biom_title: "Fetale Biometrie WHO",
+      biom_sub: "Einzelnes Perzentil je Messung · Nur verfügbare Werte eingeben",
+      biom_calc_btn: "WHO Perzentile berechnen",
+      biom_err_required: "Mindestens eine Messung in Millimetern eingeben",
+      biom_ref_note: "WHO Kiserud 2017 Kurven",
+      ref_biom_title: "Referenz - Fetale Biometrie WHO",
+      ref_biom_text: "Kiserud T, et al. WHO Fetal Growth Charts. PLoS Med. 2017;14(1):e1002220.",
+      tooltip_hc: "KU = Kopfumfang. Umfang des fetalen Kopfes.",
+      tooltip_ac: "AU = Abdomenumfang. Umfang des fetalen Bauches.",
+      tooltip_fl: "FL = Femurlänge. Länge des Oberschenkelknochens.",
+      close: "Schließen",
+      crl_title: "SSL · 1. Trimester",
+      crl_sub: "Scheitel-Steiß-Länge · Woche 6 bis 14",
+      crl_tab_crl2ga: "SSL → GA",
+      crl_tab_ga2crl: "GA → Erwartete SSL",
+      crl_input_label: "Gemessene SSL (mm)",
+      crl_calc_btn: "GA und Perzentil berechnen",
+      crl_calc_ga_btn: "Erwartete SSL berechnen",
+      crl_err_range: "SSL muss zwischen 3 und 100 mm liegen",
+      crl_err_ga_range: "GA muss zwischen 6 und 14 Wochen liegen",
+      crl_result_mm: "SSL",
+      crl_result_perc: "Perzentil",
+      crl_result_expected: "Erwartete SSL (p50)",
+      crl_note: "Robinson & Fleming 1975 · FMF und ISUOG",
+      crl_ref_title: "Referenz - SSL / CRL",
+      crl_ref_text: "Robinson HP, Fleming JE. Br J Obstet Gynaecol. 1975;82(9):702-710.",
+      err_fur_future: "LMP kann kein zukünftiges Datum sein", err_fur_required: "LMP-Datum eingeben",
+      err_echo_required: "Ultraschalldatum eingeben", err_weeks_required: "Schwangerschaftswochen eingeben",
+      err_days_range: "Tage müssen zwischen 0 und 6 liegen", err_ga_range: "GA muss zwischen 14 und 40 Wochen liegen",
+      err_weight_min: "Gültiges Gewicht eingeben (mind. 100 g)",
+      err_eco_weight_min: "Ultraschallgewicht eingeben (mind. 100 g)",
+      err_biometry_required: "BPD, KU, AU und FL in Millimetern ausfüllen",
+      err_calc: "Berechnungsfehler. Bitte Daten prüfen.",
+    },
+    id: {
+      app_sub: "Usia kehamilan · Hadlock 4 · Persentil WHO · Biometri janin",
+      eg_title: "Usia Kehamilan (UK)", fur_label: "Haid Terakhir (HPHT)",
+      calc_eg_btn: "Hitung UK & HPL", mode_retro: "Hitung HPHT dari UK",
+      retro_date: "Tanggal USG", weeks: "minggu", days: "hari",
+      calc_fur_btn: "Hitung HPHT & HPL", fur_result: "HPHT estimasi", fpp_result: "Hari Perkiraan Lahir",
+      growth_title: "Pertumbuhan Janin",
+      tab_oms: "Persentil WHO (Berat + UK)", tab_hadlock: "Hadlock 4 (BPD+LKA+LK+FL)",
+      weeks_label: "Minggu UK", days_label: "Hari UK",
+      weight_label: "Berat janin (gram)", calc_perc_btn: "Hitung persentil WHO",
+      bpd_mm: "BPD", hc_mm: "LKA", ac_mm: "LK", fl_mm: "FL",
+      calc_had_btn: "Estimasi berat (Hadlock 4) + persentil WHO",
+      percentil_text: "Persentil WHO", efw_text: "Estimasi berat (Hadlock 4)",
+      eco_toggle: "Masukkan berat USG langsung",
+      eco_weight_label: "Berat USG (gram)",
+      eco_weight_placeholder: "Mis: 610",
+      result_note_hadlock: "Persentil WHO dihitung dari berat Hadlock 4 · Kurva Kiserud 2017",
+      result_note_oms: "Persentil WHO dihitung dari berat yang dimasukkan · Kurva Kiserud 2017",
+      result_note_eco: "Persentil WHO dihitung dari berat USG · Kurva Kiserud 2017",
+      ver_ref: "📚 Lihat referensi",
+      promo_title: "Temukan aplikasi mitra kami",
+      app_semanas: "Minggu Saya", app_ciclo: "Siklus Saya",
+      app_semanas_desc: "Pelacakan kehamilan minggu demi minggu.",
+      app_ciclo_desc: "Pelacakan siklus menstruasi dan kalender ovulasi.",
+      available_on: "Tersedia di iOS dan Android", ga_weeks: "UK saat ini",
+      disclaimer_title: "Peringatan",
+      disclaimer_text: "Alat referensi edukasi. Bukan pengganti saran medis profesional.",
+      ref_eg_title: "Referensi - Usia Kehamilan", ref_eg_text: "Aturan Naegele. Williams Obstetrics, 26th ed.",
+      ref_oms_title: "Referensi - WHO", ref_oms_text: "Kiserud T, et al. PLoS Med. 2017;14(1):e1002220.",
+      ref_hadlock_title: "Referensi - Hadlock 4", ref_hadlock_text: "Hadlock FP, et al. Am J Obstet Gynecol. 1985;151(3):333-337.",
+      tooltip_bpd: "BPD = Diameter Biparietal. Ukuran melintang tengkorak janin.",
+      biom_title: "Biometri Janin WHO",
+      biom_sub: "Persentil individual per pengukuran · Masukkan hanya yang tersedia",
+      biom_calc_btn: "Hitung persentil WHO",
+      biom_err_required: "Masukkan setidaknya satu pengukuran dalam milimeter",
+      biom_ref_note: "Kurva WHO Kiserud 2017",
+      ref_biom_title: "Referensi - Biometri Janin WHO",
+      ref_biom_text: "Kiserud T, et al. WHO Fetal Growth Charts. PLoS Med. 2017;14(1):e1002220.",
+      tooltip_hc: "LKA = Lingkar Kepala Janin. Keliling kepala janin.",
+      tooltip_ac: "LK = Lingkar Perut. Ukuran perut janin.",
+      tooltip_fl: "FL = Panjang Tulang Paha. Ukuran tulang paha janin.",
+      close: "Tutup",
+      crl_title: "CRL · Trimester 1",
+      crl_sub: "Panjang kepala-bokong · Minggu 6 sampai 14",
+      crl_tab_crl2ga: "CRL → UK",
+      crl_tab_ga2crl: "UK → CRL yang diharapkan",
+      crl_input_label: "CRL terukur (mm)",
+      crl_calc_btn: "Hitung UK dan persentil",
+      crl_calc_ga_btn: "Hitung CRL yang diharapkan",
+      crl_err_range: "CRL harus antara 3 dan 100 mm",
+      crl_err_ga_range: "UK harus antara 6 dan 14 minggu",
+      crl_result_mm: "CRL",
+      crl_result_perc: "Persentil",
+      crl_result_expected: "CRL yang diharapkan (p50)",
+      crl_note: "Robinson & Fleming 1975 · FMF dan ISUOG",
+      crl_ref_title: "Referensi - CRL",
+      crl_ref_text: "Robinson HP, Fleming JE. Br J Obstet Gynaecol. 1975;82(9):702-710.",
+      err_fur_future: "HPHT tidak boleh tanggal masa depan", err_fur_required: "Masukkan tanggal HPHT",
+      err_echo_required: "Masukkan tanggal USG", err_weeks_required: "Masukkan minggu UK",
+      err_days_range: "Hari harus antara 0 dan 6", err_ga_range: "UK harus antara 14 dan 40 minggu",
+      err_weight_min: "Masukkan berat valid (minimal 100 g)",
+      err_eco_weight_min: "Masukkan berat USG (minimal 100 g)",
+      err_biometry_required: "Lengkapi BPD, LKA, LK dan FL dalam milimeter",
+      err_calc: "Kesalahan perhitungan. Periksa data yang dimasukkan.",
+    }
+  };
+
+  const toUTCDate = (str) => { if(!str) return null; const [y,m,d]=str.split('-'); return new Date(Date.UTC(y,m-1,d)); };
+  const formatDate = (d) => d ? d.toLocaleDateString('es-CL',{day:'2-digit',month:'long',year:'numeric',timeZone:'UTC'}) : '';
+
+  let toastContainer = null;
+  const getToastContainer = () => {
+    if (!toastContainer) { toastContainer = document.createElement('div'); toastContainer.className = 'toast-container'; document.body.appendChild(toastContainer); }
+    return toastContainer;
+  };
+  const showToast = (message, type='error', duration=3500) => {
+    const container = getToastContainer();
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    toast.innerHTML = `<span class="toast-icon">⚠️</span><span>${message}</span>`;
+    container.appendChild(toast);
+    setTimeout(() => { toast.classList.add('toast-fade-out'); setTimeout(() => { if(toast.parentNode) toast.parentNode.removeChild(toast); }, 300); }, duration);
+  };
+
+  // ==================== PERCENTIL OMS (Kiserud 2017) ====================
+  const EFW_COEF = {
+    0.01:[-5.01496264869835e-2,3.74471599175392e-1,-5.34930256943893e-3,2.3744363684445e-5],
+    0.025:[-2.30518383014592e-1,4.00511116318458e-1,-6.17993235833267e-3,3.16595762972649e-5],
+    0.05:[-1.62057103557898e-1,3.93965369913166e-1,-5.79733056422172e-3,2.55319128239087e-5],
+    0.10:[-4.55887642525626e-2,3.89314052082164e-1,-5.74527674062641e-3,2.65557891064333e-5],
+    0.25:[-1.2258767992062e-2,3.93836404898322e-1,-5.92304885519551e-3,2.8863017896588e-5],
+    0.50:[1.57310086966445e-1,3.83067935520509e-1,-5.54046846639963e-3,2.46570062800598e-5],
+    0.75:[2.93297386426919e-1,3.76096229210412e-1,-5.29255036113726e-3,2.18372277641981e-5],
+    0.90:[3.53142227490073e-1,3.76486874470206e-1,-5.28742945785833e-3,2.14760212556463e-5],
+    0.95:[2.85025055968914e-1,3.90621472299378e-1,-5.82929182402995e-3,2.79088693116937e-5],
+    0.975:[4.08170594889372e-1,3.81068214664342e-1,-5.50913922743603e-3,2.46713147783532e-5],
+    0.99:[7.9584342596075e-1,3.42142215761221e-1,-4.14863204456851e-3,1.02097735855226e-5]
+  };
+  const QUANTILES = [0.01,0.025,0.05,0.10,0.25,0.50,0.75,0.90,0.95,0.975,0.99];
+  const evalEFW = (coef,ga) => coef[0]+coef[1]*ga+coef[2]*ga*ga+coef[3]*ga*ga*ga;
+  const percentilOMS = (peso,semanas) => {
+    if(semanas<14||semanas>40) return null;
+    const lnP = Math.log(peso);
+    const vals = QUANTILES.map(q=>({q,v:evalEFW(EFW_COEF[q],semanas)}));
+    if(lnP<=vals[0].v) return 0.5;
+    if(lnP>=vals[vals.length-1].v) return 99.5;
+    for(let i=0;i<vals.length-1;i++){
+      if(lnP>=vals[i].v&&lnP<=vals[i+1].v){
+        const t=(lnP-vals[i].v)/(vals[i+1].v-vals[i].v);
+        return Math.round((vals[i].q+t*(vals[i+1].q-vals[i].q))*1000)/10;
+      }
+    }
+    return null;
+  };
+  const hadlock4 = (bpd,hc,ac,fl) => {
+    if(!bpd||!hc||!ac||!fl) return null;
+    const B=bpd/10,H=hc/10,A=ac/10,F=fl/10;
+    return Math.round(Math.pow(10, 1.3596-0.00386*A*F+0.0064*H+0.00061*B*A+0.0424*A+0.174*F));
+  };
+
+    const FieldError = ({msg}) => msg ? e('div',{className:'field-error'},"⚠ ",msg) : null;
+  const Tooltip = ({text,onClose}) => e('div',{className:'tooltip-modal',onClick:onClose},
+    e('div',{className:'tooltip-card',onClick:ev=>ev.stopPropagation()},
+      e('p',null,text),
+      e('button',{className:'btn',style:{marginTop:8,background:'#0B5E7E'},onClick:onClose},"OK")
+    )
+  );
+  const RefModal = ({title,text,onClose,closeLabel}) => e('div',{className:'modal-overlay',onClick:onClose},
+    e('div',{className:'modal-card',onClick:ev=>ev.stopPropagation()},
+      e('h3',null,"📚 ",title),
+      e('div',{className:'ref-text'},text),
+      e('button',{className:'btn',style:{background:'#0B5E7E'},onClick:onClose},closeLabel||"Cerrar")
+    )
+  );
+  const Toggle = ({on, onToggle, label}) =>
+    e('div',{className:'eco-toggle',onClick:onToggle},
+      e('div',{className:`eco-toggle-track ${on?'on':''}`}, e('div',{className:'eco-toggle-thumb'})),
+      e('span',{className:'eco-toggle-label'},label)
+    );
+    // ==================== EDAD GESTACIONAL ====================
+  const GestationalWidget = ({t}) => {
+    const [mode,setMode] = useState('fur');
+    const [fur,setFur] = useState('');
+    const [refDate,setRefDate] = useState('');
+    const [refWeeks,setRefWeeks] = useState('');
+    const [refDays,setRefDays] = useState('');
+    const [result,setResult] = useState(null);
+    const [showRef,setShowRef] = useState(false);
+    const [errFur,setErrFur] = useState('');
+    const [errRefDate,setErrRefDate] = useState('');
+    const [errRefWeeks,setErrRefWeeks] = useState('');
+    const [errRefDays,setErrRefDays] = useState('');
+    const clearErrors = () => {setErrFur('');setErrRefDate('');setErrRefWeeks('');setErrRefDays('');};
+
+    const calcFromFUR = () => {
+      clearErrors();
+      if(!fur){setErrFur(t('err_fur_required'));return;}
+      const lmp=toUTCDate(fur);
+      const today=new Date();today.setUTCHours(0,0,0,0);
+      if(lmp>today){setErrFur(t('err_fur_future'));return;}
+      const diff=Math.floor((today-lmp)/86400000);
+      const weeks=Math.floor(diff/7),days=diff%7;
+      const edd=new Date(lmp);edd.setUTCDate(edd.getUTCDate()+280);
+      setResult({weeks,days,fur:lmp,edd});
+    };
+
+    const calcFromEGA = () => {
+      clearErrors();
+      if(!refDate){setErrRefDate(t('err_echo_required'));return;}
+      if(!refWeeks){setErrRefWeeks(t('err_weeks_required'));return;}
+      const wNum=parseInt(refWeeks);
+      if(isNaN(wNum)||wNum<0||wNum>45){setErrRefWeeks(t('err_ga_range'));return;}
+      if(refDays!==''){const dNum=parseInt(refDays);if(isNaN(dNum)||dNum<0||dNum>6){setErrRefDays(t('err_days_range'));return;}}
+      const totDays=(parseInt(refWeeks)||0)*7+(parseInt(refDays)||0);
+      const ref=toUTCDate(refDate);
+      const lmp=new Date(ref);lmp.setUTCDate(lmp.getUTCDate()-totDays);
+      const edd=new Date(lmp);edd.setUTCDate(edd.getUTCDate()+280);
+      const today=new Date();today.setUTCHours(0,0,0,0);
+      const diff=Math.floor((today-lmp)/86400000);
+      const w=Math.floor(diff/7),dy=diff%7;
+      if(w>=0) setResult({weeks:w,days:dy,fur:lmp,edd});
+    };
+
+    const handleRefDaysBlur = () => {
+      if(refDays==='') return;
+      const dNum=parseInt(refDays);
+      if(!isNaN(dNum)&&(dNum<0||dNum>6)) setErrRefDays(t('err_days_range'));
+      else setErrRefDays('');
+    };
+
+    return e('div',{className:"card"},
+      e('div',{className:"card-title"},
+        e('div',{className:"card-title-left"},t('eg_title')),
+        e('button',{className:"ref-icon-btn",onClick:()=>setShowRef(true)},"📚")
+      ),
+      e('div',{className:"mode-buttons"},
+        e('button',{onClick:()=>{setMode('fur');setResult(null);clearErrors();},className:`btn-outline btn`,style:{width:'auto',padding:'8px 18px',flex:1}},"📆 FUR → EG"),
+        e('button',{onClick:()=>{setMode('retro');setResult(null);clearErrors();},className:`btn-outline btn`,style:{width:'auto',padding:'8px 18px',flex:1}},"🔄 "+t('mode_retro'))
+      ),
+      mode==='fur'
+        ? e('div',null,
+            e('label',null,t('fur_label')),
+            e('input',{type:'date',value:fur,className:errFur?'input-error':'',onChange:ev=>{setFur(ev.target.value);setResult(null);setErrFur('');}}),
+            e(FieldError,{msg:errFur}),
+            e('button',{className:'btn',onClick:calcFromFUR},t('calc_eg_btn'))
+          )
+        : e('div',null,
+            e('label',null,t('retro_date')),
+            e('input',{type:'date',value:refDate,className:errRefDate?'input-error':'',onChange:ev=>{setRefDate(ev.target.value);setResult(null);setErrRefDate('');}}),
+            e(FieldError,{msg:errRefDate}),
+            e('div',{className:'grid-2'},
+              e('div',null,
+                e('label',null,t('weeks')),
+                e('input',{type:'number',placeholder:"ej: 32",value:refWeeks,className:errRefWeeks?'input-error':'',onChange:ev=>{setRefWeeks(ev.target.value);setResult(null);setErrRefWeeks('');}}),
+                e(FieldError,{msg:errRefWeeks})
+              ),
+              e('div',null,
+                e('label',null,t('days')),
+                e('input',{type:'number',min:0,max:6,placeholder:"0-6",value:refDays,className:errRefDays?'input-error':'',onChange:ev=>{setRefDays(ev.target.value);setResult(null);setErrRefDays('');},onBlur:handleRefDaysBlur}),
+                e(FieldError,{msg:errRefDays})
+              )
+            ),
+            e('button',{className:'btn',onClick:calcFromEGA},t('calc_fur_btn'))
+          ),
+      result && e('div',{className:'result-box'},
+        e('div',{className:'result-big'},result.weeks,"+",result.days),
+        e('div',{style:{fontSize:12,marginBottom:8}},t('ga_weeks')),
+        e('hr'),
+        e('div',{style:{fontWeight:600,fontSize:14}},t('fur_result'),": ",formatDate(result.fur)),
+        e('div',{style:{fontWeight:600,marginTop:8,fontSize:14}},t('fpp_result'),": ",formatDate(result.edd))
+      ),
+      showRef && e(RefModal,{title:t('ref_eg_title'),text:t('ref_eg_text'),onClose:()=>setShowRef(false),closeLabel:t('close')})
+    );
+  };
+
+  // ==================== CRECIMIENTO FETAL ====================
+  const FetalWidget = ({t}) => {
+    const [tab,setTab] = useState('oms');
+    const [weeks,setWeeks] = useState('');
+    const [days,setDays] = useState('');
+    const [peso,setPeso] = useState('');
+    const [bpd,setBpd] = useState('');
+    const [hc,setHc] = useState('');
+    const [ac,setAc] = useState('');
+    const [fl,setFl] = useState('');
+    const [res,setRes] = useState(null);
+    const [tooltip,setTooltip] = useState(null);
+    const [showRef,setShowRef] = useState(false);
+    const [errWeeks,setErrWeeks] = useState('');
+    const [errDays,setErrDays] = useState('');
+    const [errPeso,setErrPeso] = useState('');
+    const [errBio,setErrBio] = useState('');
+    const clearErrors = () => {setErrWeeks('');setErrDays('');setErrPeso('');setErrBio('');};
+
+    const toDecimal = (w,d) => {
+      const wNum=parseInt(w),dNum=parseInt(d)||0;
+      if(isNaN(wNum)||wNum<14||wNum>40) return null;
+      return wNum+(dNum/7);
+    };
+
+    const validateGA = () => {
+      if(!weeks){setErrWeeks(t('err_weeks_required'));return false;}
+      const w=parseInt(weeks);
+      if(isNaN(w)||w<14||w>40){setErrWeeks(t('err_ga_range'));return false;}
+      if(days!==''){const d=parseInt(days);if(isNaN(d)||d<0||d>6){setErrDays(t('err_days_range'));return false;}}
+      return true;
+    };
+
+    const calcOms = () => {
+      clearErrors();
+      setRes(null);
+      if(!validateGA()) return;
+      const pesoNum=parseFloat(peso);
+      if(isNaN(pesoNum)||pesoNum<100){setErrPeso(t('err_weight_min'));return;}
+      const gaDec=toDecimal(weeks,days);
+      const pct=percentilOMS(pesoNum,gaDec);
+      if(pct===null){showToast(t('err_calc'));return;}
+      setRes({type:'OMS',weeks:parseInt(weeks),days:parseInt(days)||0,efw:pesoNum,pct});
+    };
+
+    const calcHadlock4 = () => {
+      clearErrors();
+      if(!validateGA()) return;
+      const bpdNum=parseFloat(bpd),hcNum=parseFloat(hc),acNum=parseFloat(ac),flNum=parseFloat(fl);
+      if(isNaN(bpdNum)||isNaN(hcNum)||isNaN(acNum)||isNaN(flNum)){setErrBio(t('err_biometry_required'));return;}
+      const efw=hadlock4(bpdNum,hcNum,acNum,flNum);
+      if(!efw){showToast(t('err_calc'));return;}
+      const gaDec=toDecimal(weeks,days);
+      const pct=percentilOMS(efw,gaDec);
+      setRes({type:'Hadlock4',weeks:parseInt(weeks),days:parseInt(days)||0,efw,pct,bpd:bpdNum,hc:hcNum,ac:acNum,fl:flNum});
+    };
+
+    const handleDaysBlur = () => {
+      if(days==='') return;
+      const d=parseInt(days);
+      if(!isNaN(d)&&(d<0||d>6)) setErrDays(t('err_days_range'));
+      else setErrDays('');
+    };
+
+    const showTooltip = (type) => {
+      const map={bpd:'tooltip_bpd',hc:'tooltip_hc',ac:'tooltip_ac',fl:'tooltip_fl'};
+      if(map[type]) setTooltip(t(map[type]));
+    };
+
+    const resultNote = res
+      ? res.type==='Hadlock4' ? t('result_note_hadlock')
+      : res.type==='OMS_ECO' ? t('result_note_eco')
+      : t('result_note_oms')
+      : '';
+
+    const efwLabel = res
+      ? res.type==='Hadlock4' ? t('efw_text')
+      : res.type==='OMS_ECO' ? t('eco_weight_label')
+      : t('weight_label')
+      : '';
+
+    return e('div',{className:"card"},
+      e('div',{className:"card-title"},
+        e('div',{className:"card-title-left"},t('growth_title')),
+        e('button',{className:"ref-icon-btn",onClick:()=>setShowRef(true)},"📚")
+      ),
+      e('div',{style:{display:'flex',gap:12,marginBottom:18,borderBottom:'1px solid #dce7ed',paddingBottom:8}},
+        e('button',{onClick:()=>{setTab('oms');setRes(null);clearErrors();},style:{background:'none',border:'none',fontWeight:tab==='oms'?800:500,color:tab==='oms'?'#0B5E7E':'#6f9bb0',fontSize:15,cursor:'pointer',padding:'8px 0',flex:1}},t('tab_oms')),
+        e('button',{onClick:()=>{setTab('hadlock');setRes(null);clearErrors();},style:{background:'none',border:'none',fontWeight:tab==='hadlock'?800:500,color:tab==='hadlock'?'#0B5E7E':'#6f9bb0',fontSize:15,cursor:'pointer',padding:'8px 0',flex:1}},t('tab_hadlock'))
+      ),
+      e('div',{className:"eg-group",style:{marginBottom:0}},
+        e('div',{className:"eg-field"},
+          e('label',null,t('weeks_label')),
+          e('input',{type:'number',min:14,max:40,placeholder:"ej: 32",value:weeks,className:errWeeks?'input-error':'',onChange:ev=>{setWeeks(ev.target.value);setRes(null);setErrWeeks('');}})
+        ),
+        e('div',{className:"eg-field"},
+          e('label',null,t('days_label')),
+          e('input',{type:'number',min:0,max:6,placeholder:"0-6",value:days,className:errDays?'input-error':'',onChange:ev=>{setDays(ev.target.value);setRes(null);setErrDays('');},onBlur:handleDaysBlur})
+        )
+      ),
+      (errWeeks||errDays) && e('div',{style:{marginBottom:8}},e(FieldError,{msg:errWeeks||errDays})),
+
+      tab==='oms'
+        ? e('div',null,
+            e('label',null,t('weight_label')),
+            e('input',{type:'number',placeholder:"ej: 2450",value:peso,className:errPeso?'input-error':'',onChange:ev=>{setPeso(ev.target.value);setRes(null);setErrPeso('');}})  ,
+            e(FieldError,{msg:errPeso}),
+            e('button',{className:'btn',onClick:calcOms},t('calc_perc_btn'))
+          )
+        : e('div',null,
+            e('div',{className:'grid-4'},
+              e('div',null,
+                e('div',{className:'label-with-info'},e('label',null,t('bpd_mm')),e('span',{className:'info-icon',onClick:()=>showTooltip('bpd')},"?")),
+                e('input',{type:'number',step:1,placeholder:"ej: 58",value:bpd,className:errBio&&!bpd?'input-error':'',onChange:ev=>{setBpd(ev.target.value);setRes(null);setErrBio('');}})
+              ),
+              e('div',null,
+                e('div',{className:'label-with-info'},e('label',null,t('hc_mm')),e('span',{className:'info-icon',onClick:()=>showTooltip('hc')},"?")),
+                e('input',{type:'number',step:1,placeholder:"ej: 285",value:hc,className:errBio&&!hc?'input-error':'',onChange:ev=>{setHc(ev.target.value);setRes(null);setErrBio('');}})
+              ),
+              e('div',null,
+                e('div',{className:'label-with-info'},e('label',null,t('ac_mm')),e('span',{className:'info-icon',onClick:()=>showTooltip('ac')},"?")),
+                e('input',{type:'number',step:1,placeholder:"ej: 284",value:ac,className:errBio&&!ac?'input-error':'',onChange:ev=>{setAc(ev.target.value);setRes(null);setErrBio('');}})
+              ),
+              e('div',null,
+                e('div',{className:'label-with-info'},e('label',null,t('fl_mm')),e('span',{className:'info-icon',onClick:()=>showTooltip('fl')},"?")),
+                e('input',{type:'number',step:1,placeholder:"ej: 65",value:fl,className:errBio&&!fl?'input-error':'',onChange:ev=>{setFl(ev.target.value);setRes(null);setErrBio('');}})
+              )
+            ),
+            e(FieldError,{msg:errBio}),
+            e('button',{className:'btn',onClick:calcHadlock4},t('calc_had_btn'))
+          ),
+
+      res && e('div',{className:'result-box',style:{marginTop:16}},
+        e('div',{style:{fontSize:36,fontWeight:800,color:'#0B5E7E'}},res.pct.toFixed(1),"%"),
+        e('div',{style:{fontSize:12,marginBottom:6}},t('percentil_text')),
+        e('div',{style:{fontWeight:700,fontSize:16}},efwLabel,": ",res.efw.toLocaleString()," g"),
+        e('div',{style:{fontSize:12,marginTop:4,color:'#3b6f8a'}},"EG: ",res.weeks,"+",res.days),
+        res.type==='Hadlock4' && e('div',{style:{fontSize:11,marginTop:4}},`BPD ${res.bpd} · HC ${res.hc} · AC ${res.ac} · FL ${res.fl} mm`),
+        e('div',{className:'result-note'},resultNote)
+      ),
+      showRef && e(RefModal,{title:tab==='oms'?t('ref_oms_title'):t('ref_hadlock_title'),text:tab==='oms'?t('ref_oms_text'):t('ref_hadlock_text'),onClose:()=>setShowRef(false),closeLabel:t('close')}),
+      tooltip && e(Tooltip,{text:tooltip,onClose:()=>setTooltip(null)})
+    );
+  };
+
+  // ==================== DOPPLER: VISTA DETALLE (UtA / UA / MCA / DV) ====================
+  
+
+  // ==================== LCN / CRL (Robinson & Fleming 1975, FMF) ====================
+  // Fórmula bidireccional:
+  // LCN→EG: GA(días) = 8.052 × √(LCN_mm × 1.037) + 23.73
+  // EG→LCN: LCN_mm = ((GA_días - 23.73) / 8.052)² / 1.037
+
+  const crlToGA = (crl_mm) => {
+    const days = 8.052 * Math.sqrt(crl_mm * 1.037) + 23.73;
+    const weeks = Math.floor(days / 7);
+    const d = Math.round(days % 7);
+    return { days: Math.round(days), weeks, d };
+  };
+
+  const gaToCRL = (ga_days) => {
+    const inside = (ga_days - 23.73) / 8.052;
+    return Math.round((inside * inside) / 1.037);
+  };
+
+  // Tabla LCN p5/p50/p95 por semana (6 a 14)
+  // Derivada de Robinson & Fleming + Snijders & Nicolaides 1994
+  const CRL_TABLE = {
+    6:  {p5:3,  p50:5,  p95:9},
+    7:  {p5:6,  p50:10, p95:15},
+    8:  {p5:10, p50:16, p95:22},
+    9:  {p5:15, p50:23, p95:31},
+    10: {p5:21, p50:31, p95:41},
+    11: {p5:28, p50:41, p95:53},
+    12: {p5:36, p50:52, p95:66},
+    13: {p5:46, p50:63, p95:80},
+    14: {p5:56, p50:75, p95:94},
+  };
+
+  const calcCRLPerc = (crl_mm, ga_weeks) => {
+    const w = Math.max(6, Math.min(14, Math.round(ga_weeks)));
+    const ref = CRL_TABLE[w];
+    if(!ref) return null;
+    // Interpolación entre p5/p50/p95 usando distribución log-normal
+    if(crl_mm <= ref.p5) return Math.max(0.5, (crl_mm / ref.p5) * 5);
+    if(crl_mm >= ref.p95) return Math.min(99.5, 95 + ((crl_mm - ref.p95) / ref.p95) * 5);
+    if(crl_mm <= ref.p50) {
+      const t = (crl_mm - ref.p5) / (ref.p50 - ref.p5);
+      return Math.round((5 + t * 45) * 10) / 10;
+    }
+    const t = (crl_mm - ref.p50) / (ref.p95 - ref.p50);
+    return Math.round((50 + t * 45) * 10) / 10;
+  };
+
+  // ── Gráfico LCN ──
+  const CRLChart = ({crl_mm, ga_weeks, pct}) => {
+    const W = 320, H = 160;
+    const PAD = {l:32, r:16, t:14, b:24};
+    const chartW = W - PAD.l - PAD.r;
+    const chartH = H - PAD.t - PAD.b;
+    const semMin = 6, semMax = 14;
+    const sems = [6,7,8,9,10,11,12,13,14];
+
+    const allMm = sems.flatMap(s => [CRL_TABLE[s].p5, CRL_TABLE[s].p95]);
+    const mmMin = 0;
+    const mmMax = Math.max(...allMm) * 1.08;
+
+    const xScale = s => PAD.l + (s - semMin) / (semMax - semMin) * chartW;
+    const yScale = v => PAD.t + chartH - (v - mmMin) / (mmMax - mmMin) * chartH;
+    const pathFrom = pts => 'M' + pts.map(p => `${xScale(p.w).toFixed(1)},${yScale(p.v).toFixed(1)}`).join(' L');
+
+    const p5pts  = sems.map(s => ({w:s, v:CRL_TABLE[s].p5}));
+    const p50pts = sems.map(s => ({w:s, v:CRL_TABLE[s].p50}));
+    const p95pts = sems.map(s => ({w:s, v:CRL_TABLE[s].p95}));
+
+    const ga_w = ga_weeks || 10;
+    const px = xScale(Math.max(semMin, Math.min(semMax, ga_w)));
+    const py = yScale(Math.max(0, Math.min(mmMax, crl_mm)));
+
+    const colorP = pct < 5 || pct > 95 ? '#c0392b' : pct < 10 || pct > 90 ? '#d9822b' : '#1AA3B7';
+
+    return e('div',{style:{marginTop:14,background:'#f7fafc',borderRadius:16,padding:'10px 8px 6px'}},
+      e('div',{style:{fontSize:11,color:'#3b6f8a',marginBottom:4}},
+        'LCN ',crl_mm,' mm · EG estimada: ',crlToGA(crl_mm).weeks,'+',crlToGA(crl_mm).d,' sem',
+        pct !== null ? e('span',{style:{marginLeft:8,fontWeight:700,color:colorP}},pct.toFixed(1),'%') : null
+      ),
+      e('svg',{viewBox:`0 0 ${W} ${H}`,style:{width:'100%',height:'auto',overflow:'visible'}},
+        // Grid
+        [0,25,50,75].map((v,i) =>
+          e('line',{key:'g'+i,x1:PAD.l,y1:yScale(v),x2:W-PAD.r,y2:yScale(v),stroke:'#dce7ed',strokeWidth:1})
+        ),
+        // Curvas
+        e('path',{d:pathFrom(p5pts), fill:'none', stroke:'#f0a0a0', strokeWidth:1.5, strokeDasharray:'4,3'}),
+        e('path',{d:pathFrom(p50pts), fill:'none', stroke:'#1AA3B7', strokeWidth:2.2}),
+        e('path',{d:pathFrom(p95pts), fill:'none', stroke:'#f0a0a0', strokeWidth:1.5, strokeDasharray:'4,3'}),
+        // Labels curvas
+        e('text',{x:W-PAD.r+2,y:yScale(CRL_TABLE[14].p95)+4,fontSize:8,fill:'#f0a0a0'},'p95'),
+        e('text',{x:W-PAD.r+2,y:yScale(CRL_TABLE[14].p50)+4,fontSize:8,fill:'#1AA3B7'},'p50'),
+        e('text',{x:W-PAD.r+2,y:yScale(CRL_TABLE[14].p5)+4,fontSize:8,fill:'#f0a0a0'},'p5'),
+        // Punto paciente
+        e('circle',{cx:px,cy:py,r:6,fill:colorP,stroke:'white',strokeWidth:2}),
+        e('text',{x:px+(px>W*0.7?-8:8),y:py-8,fontSize:9,fontWeight:'bold',fill:colorP,textAnchor:px>W*0.7?'end':'start'},
+          crl_mm,'mm'
+        ),
+        // Eje X
+        sems.map((s,i) => e('text',{key:'x'+i,x:xScale(s),y:H-4,fontSize:8,fill:'#8aaec0',textAnchor:'middle'},s)),
+        e('text',{x:PAD.l+chartW/2,y:H+2,fontSize:8,fill:'#8aaec0',textAnchor:'middle'},'semanas'),
+        // Eje Y
+        [0,25,50,75].map((v,i) =>
+          e('text',{key:'y'+i,x:PAD.l-3,y:yScale(v)+3,fontSize:8,fill:'#8aaec0',textAnchor:'end'},v)
+        )
+      )
+    );
+  };
+
+  // ── Widget LCN ──
+  const CRLWidget = ({t}) => {
+    const [mode, setMode] = useState('crl2ga'); // crl2ga | ga2crl
+    const [crl, setCrl] = useState('');
+    const [weeks, setWeeks] = useState('');
+    const [days, setDays] = useState('');
+    const [res, setRes] = useState(null);
+    const [showRef, setShowRef] = useState(false);
+    const [errCrl, setErrCrl] = useState('');
+    const [errWeeks, setErrWeeks] = useState('');
+
+    const calcFromCRL = () => {
+      setErrCrl(''); setErrWeeks('');
+      const mm = parseFloat(crl);
+      if(isNaN(mm) || mm < 3 || mm > 100) { setErrCrl(t('crl_err_range')); return; }
+      const ga = crlToGA(mm);
+      const pct = calcCRLPerc(mm, ga.weeks + ga.d/7);
+      setRes({ type:'crl2ga', mm, ga, pct });
+    };
+
+    const calcFromGA = () => {
+      setErrCrl(''); setErrWeeks('');
+      const w = parseInt(weeks);
+      if(isNaN(w) || w < 6 || w > 14) { setErrWeeks(t('crl_err_ga_range')); return; }
+      const d = parseInt(days) || 0;
+      const ga_days = w * 7 + d;
+      const mm = gaToCRL(ga_days);
+      setRes({ type:'ga2crl', mm, ga:{weeks:w, d, days:ga_days}, pct:null });
+    };
+
+    const gaDecimal = res ? res.ga.weeks + res.ga.d/7 : 10;
+
+    return e('div',{className:'card'},
+      e('div',{className:'card-title'},
+        e('div',{className:'card-title-left'},t('crl_title')),
+        e('button',{className:'ref-icon-btn',onClick:()=>setShowRef(true)},'📚')
+      ),
+      e('div',{style:{fontSize:12,color:'#6f9bb0',marginBottom:14}},t('crl_sub')),
+      // Tabs
+      e('div',{style:{display:'flex',gap:8,marginBottom:18}},
+        e('button',{onClick:()=>{setMode('crl2ga');setRes(null);},style:{flex:1,padding:'10px 8px',borderRadius:40,border:'none',background:mode==='crl2ga'?'#0B5E7E':'#e4edf2',color:mode==='crl2ga'?'white':'#3b6f8a',fontWeight:700,fontSize:13,cursor:'pointer',fontFamily:'Inter,sans-serif'}},t('crl_tab_crl2ga')),
+        e('button',{onClick:()=>{setMode('ga2crl');setRes(null);},style:{flex:1,padding:'10px 8px',borderRadius:40,border:'none',background:mode==='ga2crl'?'#0B5E7E':'#e4edf2',color:mode==='ga2crl'?'white':'#3b6f8a',fontWeight:700,fontSize:13,cursor:'pointer',fontFamily:'Inter,sans-serif'}},t('crl_tab_ga2crl'))
+      ),
+      mode==='crl2ga'
+        ? e('div',null,
+            e('label',null,t('crl_input_label')),
+            e('input',{type:'number',step:0.1,placeholder:'ej: 45',value:crl,className:errCrl?'input-error':'',onChange:ev=>{setCrl(ev.target.value);setRes(null);setErrCrl('');}}),
+            e(FieldError,{msg:errCrl}),
+            e('button',{className:'btn',onClick:calcFromCRL},t('crl_calc_btn'))
+          )
+        : e('div',null,
+            e('div',{className:'grid-2'},
+              e('div',null,
+                e('label',null,t('weeks_label')),
+                e('input',{type:'number',min:6,max:14,placeholder:'6-14',value:weeks,className:errWeeks?'input-error':'',onChange:ev=>{setWeeks(ev.target.value);setRes(null);setErrWeeks('');}})
+              ),
+              e('div',null,
+                e('label',null,t('days_label')),
+                e('input',{type:'number',min:0,max:6,placeholder:'0-6',value:days,onChange:ev=>{setDays(ev.target.value);setRes(null);}})
+              )
+            ),
+            e(FieldError,{msg:errWeeks}),
+            e('button',{className:'btn',onClick:calcFromGA},t('crl_calc_ga_btn'))
+          ),
+      res && e('div',null,
+        e('div',{className:'result-box',style:{marginTop:16}},
+          res.type==='crl2ga'
+            ? e('div',null,
+                e('div',{className:'result-big'},res.ga.weeks,'+',res.ga.d),
+                e('div',{style:{fontSize:12,marginBottom:4}},t('ga_weeks')),
+                e('hr'),
+                e('div',{style:{fontSize:14,fontWeight:600}},t('crl_result_mm'),': ',res.mm,' mm'),
+                res.pct !== null && e('div',{style:{marginTop:6,fontSize:13,color:'#3b6f8a'}},t('crl_result_perc'),': ',
+                  e('span',{style:{fontWeight:800,color:res.pct<5||res.pct>95?'#c0392b':res.pct<10||res.pct>90?'#d9822b':'#1f9d55'}},res.pct.toFixed(1),'%')
+                ),
+                e('div',{className:'result-note'},t('crl_note'))
+              )
+            : e('div',null,
+                e('div',{className:'result-big'},res.mm,' mm'),
+                e('div',{style:{fontSize:12,marginBottom:4}},t('crl_result_expected')),
+                e('hr'),
+                e('div',{style:{fontSize:14,fontWeight:600}},'EG: ',res.ga.weeks,'+',res.ga.d,' sem'),
+                e('div',{className:'result-note'},t('crl_note'))
+              )
+        ),
+        e(CRLChart,{crl_mm:res.mm, ga_weeks:gaDecimal, pct:res.pct})
+      ),
+      showRef && e(RefModal,{title:t('crl_ref_title'),text:t('crl_ref_text'),onClose:()=>setShowRef(false),closeLabel:t('close')})
+    );
+  };
+
+  // ==================== BIOMETRÍA FETAL OMS (Kiserud 2017) ====================
+  const BIOM_COEF = {
+    BPD:{
+      0.01:[5.91008401542612e-1,2.51833515513537e-1,-5.82602136865785e-3,4.85842528593502e-5,0],
+      0.025:[5.8340478243682e-1,2.57706867351367e-1,-6.08380366281251e-3,5.16940376186165e-5,0],
+      0.05:[6.40086541374477e-1,2.5352855332296e-1,-5.91651627062447e-3,4.94614232987744e-5,0],
+      0.10:[6.7586050811029e-1,2.5343383445191e-1,-5.95606903884204e-3,5.03055604381436e-5,0],
+      0.25:[7.69315103415485e-1,2.49927024175735e-1,-5.92399444708251e-3,5.076548429269e-5,0],
+      0.50:[8.72984231314326e-1,2.43385003540798e-1,-5.71172523683453e-3,4.82880035733658e-5,0],
+      0.75:[9.83298265402666e-1,2.36071116567572e-1,-5.48348083012818e-3,4.58419655773418e-5,0],
+      0.90:[1.01351909208103,2.37088857953509e-1,-5.5421492813894e-3,4.65258350076297e-5,0],
+      0.95:[1.11401192681678,2.28258457814188e-1,-5.24271052970102e-3,4.31665697359201e-5,0],
+      0.975:[1.17917438634649,2.24245686901115e-1,-5.13638678692311e-3,4.21401138788865e-5,0],
+      0.99:[1.18876528083144,2.2624188722951e-1,-5.22504825833189e-3,4.31577122241698e-5,0]
+    },
+    HC:{
+      0.01:[1.51782795874402,2.99296859125438e-1,-7.52376152126206e-3,6.7179373384666e-5,0],
+      0.025:[1.59317517131532,2.9459800552433e-1,-7.3860372566707e-3,6.56951770216148e-5,0],
+      0.05:[1.74883945698398,2.78405280785763e-1,-6.77990950687641e-3,5.83587774721548e-5,0],
+      0.10:[1.83059537388222,2.7244251174974e-1,-6.59546864496838e-3,5.63957469365128e-5,0],
+      0.25:[1.94181945227701,2.6584757167445e-1,-6.44544904011178e-3,5.54517813431795e-5,0],
+      0.50:[2.09924879247164,2.53373656106037e-1,-6.05647816678282e-3,5.14256072059917e-5,0],
+      0.75:[2.20777451923048,2.45212320927953e-1,-5.78557948587613e-3,4.83972618799514e-5,0],
+      0.90:[2.31776999721364,2.36651510200538e-1,-5.50781288608926e-3,4.53975879344267e-5,0],
+      0.95:[2.39550106176494,2.29586666082063e-1,-5.25318141633775e-3,4.23738937924844e-5,0],
+      0.975:[2.50074069629423,2.20067854715719e-1,-4.93623111462443e-3,3.89066000946519e-5,0],
+      0.99:[2.50189533265806,2.23785148311865e-1,-5.14245402239348e-3,4.20117020605557e-5,0]
+    },
+    AC:{
+      0.01:[1.19682766661905,3.09985569982485e-1,-7.79821008212983e-3,7.21601862187339e-5,0],
+      0.025:[1.19202778944614,3.14756681991964e-1,-8.01581308902169e-3,7.51395976546808e-5,0],
+      0.05:[1.09869954558741,3.30079995799838e-1,-8.62095843727276e-3,8.25440120054722e-5,0],
+      0.10:[1.24418122481299,3.16315401650234e-1,-8.14092689297361e-3,7.72501495178619e-5,0],
+      0.25:[1.44520878528145,2.99433786203949e-1,-7.59672485585945e-3,7.1668993412344e-5,0],
+      0.50:[1.58552931028045,2.89936781915424e-1,-7.32651929135797e-3,6.9261631643994e-5,0],
+      0.75:[1.71452506914277,2.81367067786763e-1,-7.08195596502471e-3,6.7086230433841e-5,0],
+      0.90:[1.78078382317074,2.79278890414784e-1,-7.0643788983289e-3,6.75104548969352e-5,0],
+      0.95:[1.83213806223649,2.77106952998102e-1,-7.03388540291938e-3,6.76124200964958e-5,0],
+      0.975:[2.03674472691951,2.57138461817474e-1,-6.34918788914223e-3,6.0053745113196e-5,0],
+      0.99:[2.12378932803127,2.48505815693966e-1,-6.01677942684253e-3,5.62286023490798e-5,0]
+    },
+    FL:{
+      0.01:[-7.63357391915398,1.32616480908407,-6.03406386286656e-2,1.27059302964739e-3,-1.01590910980777e-5],
+      0.025:[-7.27187176976836,1.28298928826162,-5.80601892487905e-2,1.21314319801879e-3,-9.60171505470123e-6],
+      0.05:[-7.07052933404414,1.26780052700097,-5.77556347769781e-2,1.21608381996396e-3,-9.70361787292646e-6],
+      0.10:[-6.69175407354157,1.22500911064189,-5.5920618206786e-2,1.18320191905997e-3,-9.50365006831978e-6],
+      0.25:[-6.07953118554742,1.15245170563351,-5.25510654314434e-2,1.11418613323875e-3,-8.9802280974713e-6],
+      0.50:[-5.54922620776446,1.09559990166124,-5.01310925949098e-2,1.0678072569586e-3,-8.63970606288493e-6],
+      0.75:[-4.68666987282664,9.78111793398168e-1,-4.39319069083821e-2,9.2346644003072e-4,-7.39427758542544e-6],
+      0.90:[-4.31219596825529,9.4038705308254e-1,-4.24709867520927e-2,8.9977742409265e-4,-7.26284658350453e-6],
+      0.95:[-4.12398207550525,9.20344210800571e-1,-4.15728969581384e-2,8.81055511995407e-4,-7.10843959625547e-6],
+      0.975:[-3.64483930811801,8.57028131514986e-1,-3.84005685481303e-2,8.12062784461527e-4,-6.55932416998498e-6],
+      0.99:[-3.40004123807778,8.34596760116344e-1,-3.76568882663223e-2,8.03601513837836e-4,-6.55323852770109e-6]
+    }
+  };
+  const BIOM_QQ=[0.01,0.025,0.05,0.10,0.25,0.50,0.75,0.90,0.95,0.975,0.99];
+  const evalBiomPoly=(c,g)=>c[0]+c[1]*g+c[2]*g*g+c[3]*g*g*g+c[4]*g*g*g*g;
+  const calcBiomPerc=(mm,ga,dim)=>{
+    if(!mm||mm<=0||ga<14||ga>40) return null;
+    const lnM=Math.log(mm), coefDim=BIOM_COEF[dim];
+    const vals=BIOM_QQ.map(q=>({q,v:evalBiomPoly(coefDim[q],ga)}));
+    if(lnM<=vals[0].v) return 0.5;
+    if(lnM>=vals[vals.length-1].v) return 99.5;
+    for(let i=0;i<vals.length-1;i++){
+      if(lnM>=vals[i].v&&lnM<=vals[i+1].v){
+        const t=(lnM-vals[i].v)/(vals[i+1].v-vals[i].v);
+        return Math.round((vals[i].q+t*(vals[i+1].q-vals[i].q))*1000)/10;
+      }
+    }
+    return null;
+  };
+
+
+  // ── Generador de curvas para gráficos ──
+  const buildBiomCurve = (dim, quantile) => {
+    const weeks = [];
+    for(let w=14; w<=42; w++) weeks.push(w);
+    return weeks.map(w => ({
+      w,
+      mm: Math.round(Math.exp(evalBiomPoly(BIOM_COEF[dim][quantile], w))*10)/10
+    }));
+  };
+
+  const BiomChart = ({dim, mm, ga, pct}) => {
+    const p5  = buildBiomCurve(dim, 0.05);
+    const p50 = buildBiomCurve(dim, 0.50);
+    const p95 = buildBiomCurve(dim, 0.95);
+
+    const W = 320, H = 160;
+    const PAD = {l:32, r:12, t:14, b:24};
+    const chartW = W - PAD.l - PAD.r;
+    const chartH = H - PAD.t - PAD.b;
+    const semMin = 14, semMax = 42;
+
+    const allMm = [...p5.map(d=>d.mm), ...p95.map(d=>d.mm)];
+    const mmMin = Math.min(...allMm) * 0.95;
+    const mmMax = Math.max(...allMm) * 1.05;
+
+    const xScale = s => PAD.l + (s - semMin) / (semMax - semMin) * chartW;
+    const yScale = v => PAD.t + chartH - (v - mmMin) / (mmMax - mmMin) * chartH;
+
+    const pathFrom = pts => 'M' + pts.map(d => `${xScale(d.w).toFixed(1)},${yScale(d.mm).toFixed(1)}`).join(' L');
+
+    // Punto del paciente
+    const px = xScale(ga);
+    const py = yScale(mm);
+
+    // Labels eje X
+    const xTicks = [16, 20, 24, 28, 32, 36, 40];
+    // Labels eje Y (3 valores)
+    const yTicks = [
+      { v: mmMin + (mmMax-mmMin)*0.1, label: Math.round(mmMin + (mmMax-mmMin)*0.1) },
+      { v: mmMin + (mmMax-mmMin)*0.5, label: Math.round(mmMin + (mmMax-mmMin)*0.5) },
+      { v: mmMin + (mmMax-mmMin)*0.9, label: Math.round(mmMin + (mmMax-mmMin)*0.9) },
+    ];
+
+    const colorP = p < 3 || p > 97 ? '#c0392b' : p < 10 || p > 90 ? '#d9822b' : '#1AA3B7';
+    const p = pct;
+
+    return e('div',{style:{marginTop:12,background:'#f7fafc',borderRadius:16,padding:'10px 8px 6px'}},
+      e('div',{style:{fontSize:11,fontWeight:700,color:'#3b6f8a',marginBottom:4,textTransform:'uppercase',letterSpacing:'0.4px'}},
+        dim,' — ',mm,' mm · ',e('span',{style:{color:colorP}},pct.toFixed(1),'%')
+      ),
+      e('svg',{viewBox:`0 0 ${W} ${H}`,style:{width:'100%',height:'auto',overflow:'visible'}},
+        // Grid lines horizontales sutiles
+        yTicks.map((t,i) =>
+          e('line',{key:'gy'+i, x1:PAD.l, y1:yScale(t.v), x2:W-PAD.r, y2:yScale(t.v),
+            stroke:'#dce7ed', strokeWidth:1})
+        ),
+        // Curvas percentiles
+        e('path',{d:pathFrom(p5), fill:'none', stroke:'#f0a0a0', strokeWidth:1.5, strokeDasharray:'4,3'}),
+        e('path',{d:pathFrom(p50), fill:'none', stroke:'#1AA3B7', strokeWidth:2}),
+        e('path',{d:pathFrom(p95), fill:'none', stroke:'#f0a0a0', strokeWidth:1.5, strokeDasharray:'4,3'}),
+        // Labels curvas
+        e('text',{x:W-PAD.r+2, y:yScale(p5[p5.length-1].mm)+4, fontSize:8, fill:'#f0a0a0'},'p5'),
+        e('text',{x:W-PAD.r+2, y:yScale(p50[p50.length-1].mm)+4, fontSize:8, fill:'#1AA3B7'},'p50'),
+        e('text',{x:W-PAD.r+2, y:yScale(p95[p95.length-1].mm)+4, fontSize:8, fill:'#f0a0a0'},'p95'),
+        // Punto paciente
+        e('circle',{cx:px, cy:py, r:6, fill:colorP, stroke:'white', strokeWidth:2}),
+        // Label del punto
+        e('text',{x:px+(px>W*0.7?-8:8), y:py-8, fontSize:9, fontWeight:'bold', fill:colorP,
+          textAnchor:px>W*0.7?'end':'start'},
+          pct.toFixed(1),'%'
+        ),
+        // Eje X ticks
+        xTicks.map((s,i) =>
+          e('text',{key:'xt'+i, x:xScale(s), y:H-4, fontSize:8, fill:'#8aaec0', textAnchor:'middle'},s)
+        ),
+        // Eje Y ticks
+        yTicks.map((t,i) =>
+          e('text',{key:'yt'+i, x:PAD.l-3, y:yScale(t.v)+3, fontSize:8, fill:'#8aaec0', textAnchor:'end'},t.label)
+        ),
+        // Label eje X
+        e('text',{x:PAD.l+chartW/2, y:H+2, fontSize:8, fill:'#8aaec0', textAnchor:'middle'},'semanas')
+      )
+    );
+  };
+
+  const BiometryWidget = ({t}) => {
+    const [weeks,setWeeks]=useState('');
+    const [days,setDays]=useState('');
+    const [bpd,setBpd]=useState('');
+    const [hc,setHc]=useState('');
+    const [ac,setAc]=useState('');
+    const [fl,setFl]=useState('');
+    const [res,setRes]=useState(null);
+    const [showRef,setShowRef]=useState(false);
+    const [errWeeks,setErrWeeks]=useState('');
+    const [errDays,setErrDays]=useState('');
+    const [errBio,setErrBio]=useState('');
+
+    const toDecimal=(w,d)=>{const wN=parseInt(w),dN=parseInt(d)||0;if(isNaN(wN)||wN<14||wN>40)return null;return wN+(dN/7);};
+    const colorP=(p)=>p<3||p>97?'#c0392b':p<10||p>90?'#d9822b':'#1f9d55';
+
+    const calcular=()=>{
+      setErrWeeks('');setErrDays('');setErrBio('');
+      if(!weeks){setErrWeeks(t('err_weeks_required'));return;}
+      const w=parseInt(weeks);
+      if(isNaN(w)||w<14||w>40){setErrWeeks(t('err_ga_range'));return;}
+      if(days!==''){const d=parseInt(days);if(isNaN(d)||d<0||d>6){setErrDays(t('err_days_range'));return;}}
+      const bN=parseFloat(bpd),hN=parseFloat(hc),aN=parseFloat(ac),fN=parseFloat(fl);
+      if(isNaN(bN)&&isNaN(hN)&&isNaN(aN)&&isNaN(fN)){setErrBio(t('biom_err_required'));return;}
+      const ga=toDecimal(weeks,days);
+      setRes({
+        weeks:w,days:parseInt(days)||0,
+        bpd:!isNaN(bN)?{mm:bN,p:calcBiomPerc(bN,ga,'BPD')}:null,
+        hc: !isNaN(hN)?{mm:hN,p:calcBiomPerc(hN,ga,'HC')} :null,
+        ac: !isNaN(aN)?{mm:aN,p:calcBiomPerc(aN,ga,'AC')} :null,
+        fl: !isNaN(fN)?{mm:fN,p:calcBiomPerc(fN,ga,'FL')} :null,
+      });
+    };
+
+    const BiomRow=({label,val})=>{
+      if(!val) return null;
+      return e('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'10px 0',borderBottom:'1px solid #dce7ed'}},
+        e('div',null,
+          e('div',{style:{fontSize:11,fontWeight:700,color:'#3b6f8a',textTransform:'uppercase',letterSpacing:'0.4px'}},label),
+          e('div',{style:{fontSize:14,fontWeight:600,color:'#0f3b4f'}},val.mm,' mm')
+        ),
+        e('div',{style:{textAlign:'right'}},
+          e('div',{style:{fontSize:28,fontWeight:800,color:colorP(val.p)}},val.p.toFixed(1),'%'),
+          e('div',{style:{fontSize:10,color:'#6f9bb0'}},'Percentil OMS')
+        )
+      );
+    };
+
+    return e('div',{className:'card'},
+      e('div',{className:'card-title'},
+        e('div',{className:'card-title-left'},t('biom_title')),
+        e('button',{className:'ref-icon-btn',onClick:()=>setShowRef(true)},'📚')
+      ),
+      e('div',{style:{fontSize:12,color:'#6f9bb0',marginBottom:14}},t('biom_sub')),
+      e('div',{className:'eg-group',style:{marginBottom:0}},
+        e('div',{className:'eg-field'},
+          e('label',null,t('weeks_label')),
+          e('input',{type:'number',min:14,max:40,placeholder:'ej: 32',value:weeks,className:errWeeks?'input-error':'',onChange:ev=>{setWeeks(ev.target.value);setRes(null);setErrWeeks('');}})
+        ),
+        e('div',{className:'eg-field'},
+          e('label',null,t('days_label')),
+          e('input',{type:'number',min:0,max:6,placeholder:'0-6',value:days,className:errDays?'input-error':'',onChange:ev=>{setDays(ev.target.value);setRes(null);setErrDays('');}})
+        )
+      ),
+      (errWeeks||errDays)&&e('div',{style:{marginBottom:8}},e(FieldError,{msg:errWeeks||errDays})),
+      e('div',{className:'grid-2',style:{marginTop:8}},
+        e('div',null,e('label',null,t('bpd_mm'),' (mm)'),e('input',{type:'number',step:0.1,placeholder:'ej: 72',value:bpd,onChange:ev=>{setBpd(ev.target.value);setRes(null);}})),
+        e('div',null,e('label',null,t('hc_mm'),' (mm)'),e('input',{type:'number',step:0.1,placeholder:'ej: 264',value:hc,onChange:ev=>{setHc(ev.target.value);setRes(null);}})),
+        e('div',null,e('label',null,t('ac_mm'),' (mm)'),e('input',{type:'number',step:0.1,placeholder:'ej: 240',value:ac,onChange:ev=>{setAc(ev.target.value);setRes(null);}})),
+        e('div',null,e('label',null,t('fl_mm'),' (mm)'),e('input',{type:'number',step:0.1,placeholder:'ej: 52',value:fl,onChange:ev=>{setFl(ev.target.value);setRes(null);}}))
+      ),
+      e(FieldError,{msg:errBio}),
+      e('button',{className:'btn',style:{marginTop:8},onClick:calcular},t('biom_calc_btn')),
+      res&&e('div',{className:'result-box',style:{marginTop:16,padding:'4px 18px'}},
+        e('div',{style:{fontSize:11,color:'#6f9bb0',padding:'10px 0 4px'}},'EG: ',res.weeks,'+',res.days,' sem · ',t('biom_ref_note')),
+        res.bpd && e('div',null, e(BiomRow,{label:'BPD',val:res.bpd}), e(BiomChart,{dim:'BPD',mm:res.bpd.mm,ga:res.ga||toDecimal(weeks,days),pct:res.bpd.p})),
+        res.hc  && e('div',null, e(BiomRow,{label:'HC', val:res.hc}),  e(BiomChart,{dim:'HC', mm:res.hc.mm, ga:res.ga||toDecimal(weeks,days),pct:res.hc.p})),
+        res.ac  && e('div',null, e(BiomRow,{label:'AC', val:res.ac}),  e(BiomChart,{dim:'AC', mm:res.ac.mm, ga:res.ga||toDecimal(weeks,days),pct:res.ac.p})),
+        res.fl  && e('div',null, e(BiomRow,{label:'FL', val:res.fl}),  e(BiomChart,{dim:'FL', mm:res.fl.mm, ga:res.ga||toDecimal(weeks,days),pct:res.fl.p}))
+      ),
+      showRef&&e(RefModal,{title:t('ref_biom_title'),text:t('ref_biom_text'),onClose:()=>setShowRef(false),closeLabel:t('close')})
+    );
+  };
+
+  const PromoSection = ({t}) => e('div',{className:'promo-apps'},
+    e('div',{className:'promo-title'},t('promo_title')),
+    e('div',{className:'app-badge-list'},
+      e('div',{className:'app-item'},t('app_semanas')),
+      e('div',{className:'app-item'},t('app_ciclo'))
+    ),
+    e('div',{className:'promo-description'},
+      e('p',{style:{marginBottom:8}},t('app_semanas'),": ",t('app_semanas_desc')),
+      e('p',null,t('app_ciclo'),": ",t('app_ciclo_desc'))
+    ),
+    e('div',{style:{fontSize:12,marginTop:12,color:'#226f8a'}},t('available_on'))
+  );
+
+  const Disclaimer = ({t}) => e('div',{className:'disclaimer'},
+    e('strong',null,t('disclaimer_title')," "),
+    e('span',null,t('disclaimer_text'))
+  );
+
+  const App = () => {
+    const [currentLang,setCurrentLang] = useState('es');
+    const t = (key) => translations[currentLang][key]||translations.es[key]||key;
+    const langList = [
+      {code:'es',label:'🇪🇸 Español'},{code:'en',label:'🇬🇧 English'},{code:'pt',label:'🇵🇹 Português'},
+      {code:'fr',label:'🇫🇷 Français'},{code:'de',label:'🇩🇪 Deutsch'},{code:'id',label:'🇮🇩 Indonesia'}
+    ];
+    return e('div',{className:'app-container'},
+      e('div',{className:'lang-grid'},langList.map(l=>
+        e('div',{key:l.code,className:`lang-pill ${currentLang===l.code?'active':''}`,onClick:()=>setCurrentLang(l.code)},l.label)
+      )),
+      e('div',{className:'brand-header'},
+        e('div',{className:'logo-area'},e('span',{className:'app-name'},"FetalMetrics"),)
+      ),
+      e('div',{className:'subhead'},t('app_sub')),
+      e(GestationalWidget,{t}),
+      e(CRLWidget,{t}),
+      e(FetalWidget,{t}),
+      e(BiometryWidget,{t}),
+      e(Disclaimer,{t}),
+      e('div',{className:'footer-refs'},"© FetalMetrics · Peso: Hadlock 4 · Percentiles: OMS/Kiserud 2017 ")
+    );
+  };
+
+  const rootElement = document.getElementById('root');
+  if(rootElement) ReactDOM.createRoot(rootElement).render(e(App));
+})();
+</script>
+<script>
+if('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/fetalmetrics/sw.js')
+      .then(r => console.log('SW registered'))
+      .catch(e => console.log('SW error', e));
+  });
+}
+</script>
+</body>
+</html>
