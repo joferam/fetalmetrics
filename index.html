@@ -1254,7 +1254,7 @@
       { v: mmMin + (mmMax-mmMin)*0.9, label: Math.round(mmMin + (mmMax-mmMin)*0.9) },
     ];
 
-    const p = pct;
+    const p = pct !== null && pct !== undefined ? pct : 50;
     const colorP = p < 3 || p > 97 ? '#c0392b' : p < 10 || p > 90 ? '#d9822b' : '#1AA3B7';
 
     return e('div',{style:{marginTop:12,background:'#f7fafc',borderRadius:16,padding:'10px 8px 6px'}},
@@ -1322,7 +1322,7 @@
       if(isNaN(bN)&&isNaN(hN)&&isNaN(aN)&&isNaN(fN)){setErrBio(t('biom_err_required'));return;}
       const ga=toDecimal(weeks,days);
       setRes({
-        weeks:w,days:parseInt(days)||0,
+        ga,weeks:w,days:parseInt(days)||0,
         bpd:!isNaN(bN)?{mm:bN,p:calcBiomPerc(bN,ga,'BPD')}:null,
         hc: !isNaN(hN)?{mm:hN,p:calcBiomPerc(hN,ga,'HC')} :null,
         ac: !isNaN(aN)?{mm:aN,p:calcBiomPerc(aN,ga,'AC')} :null,
@@ -1371,7 +1371,7 @@
       e('button',{className:'btn',style:{marginTop:8},onClick:calcular},t('biom_calc_btn')),
       res&&e('div',{className:'result-box',style:{marginTop:16,padding:'4px 18px'}},
         e('div',{style:{fontSize:11,color:'#6f9bb0',padding:'10px 0 4px'}},'EG: ',res.weeks,'+',res.days,' sem · ',t('biom_ref_note')),
-        res.bpd && e('div',null, e(BiomRow,{label:'BPD',val:res.bpd}), e(BiomChart,{dim:'BPD',mm:res.bpd.mm,ga:res.ga||toDecimal(weeks,days),pct:res.bpd.p})),
+        res.bpd && e('div',null, e(BiomRow,{label:'BPD',val:res.bpd}), e(BiomChart,{dim:'BPD',mm:res.bpd.mm,ga:res.ga,pct:res.bpd.p})),
         res.hc  && e('div',null, e(BiomRow,{label:'HC', val:res.hc}),  e(BiomChart,{dim:'HC', mm:res.hc.mm, ga:res.ga||toDecimal(weeks,days),pct:res.hc.p})),
         res.ac  && e('div',null, e(BiomRow,{label:'AC', val:res.ac}),  e(BiomChart,{dim:'AC', mm:res.ac.mm, ga:res.ga||toDecimal(weeks,days),pct:res.ac.p})),
         res.fl  && e('div',null, e(BiomRow,{label:'FL', val:res.fl}),  e(BiomChart,{dim:'FL', mm:res.fl.mm, ga:res.ga||toDecimal(weeks,days),pct:res.fl.p}))
