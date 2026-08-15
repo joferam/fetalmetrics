@@ -1372,9 +1372,9 @@
       res&&e('div',{className:'result-box',style:{marginTop:16,padding:'4px 18px'}},
         e('div',{style:{fontSize:11,color:'#6f9bb0',padding:'10px 0 4px'}},'EG: ',res.weeks,'+',res.days,' sem · ',t('biom_ref_note')),
         res.bpd && e('div',null, e(BiomRow,{label:'BPD',val:res.bpd}), e(BiomChart,{dim:'BPD',mm:res.bpd.mm,ga:res.ga,pct:res.bpd.p})),
-        res.hc  && e('div',null, e(BiomRow,{label:'HC', val:res.hc}),  e(BiomChart,{dim:'HC', mm:res.hc.mm, ga:res.ga||toDecimal(weeks,days),pct:res.hc.p})),
-        res.ac  && e('div',null, e(BiomRow,{label:'AC', val:res.ac}),  e(BiomChart,{dim:'AC', mm:res.ac.mm, ga:res.ga||toDecimal(weeks,days),pct:res.ac.p})),
-        res.fl  && e('div',null, e(BiomRow,{label:'FL', val:res.fl}),  e(BiomChart,{dim:'FL', mm:res.fl.mm, ga:res.ga||toDecimal(weeks,days),pct:res.fl.p}))
+        res.hc  && e('div',null, e(BiomRow,{label:'HC', val:res.hc}),  e(BiomChart,{dim:'HC', mm:res.hc.mm, ga:res.ga,pct:res.hc.p})),
+        res.ac  && e('div',null, e(BiomRow,{label:'AC', val:res.ac}),  e(BiomChart,{dim:'AC', mm:res.ac.mm, ga:res.ga,pct:res.ac.p})),
+        res.fl  && e('div',null, e(BiomRow,{label:'FL', val:res.fl}),  e(BiomChart,{dim:'FL', mm:res.fl.mm, ga:res.ga,pct:res.fl.p}))
       ),
       showRef&&e(RefModal,{title:t('ref_biom_title'),text:t('ref_biom_text'),onClose:()=>setShowRef(false),closeLabel:t('close')})
     );
