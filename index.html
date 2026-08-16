@@ -925,64 +925,53 @@
     return Math.round((50 + t * 45) * 10) / 10;
   };
 
-  // ── Gráfico LCN ──
   const CRLChart = ({crl_mm, ga_weeks, pct}) => {
-    const W = 320, H = 160;
-    const PAD = {l:32, r:16, t:14, b:24};
-    const chartW = W - PAD.l - PAD.r;
-    const chartH = H - PAD.t - PAD.b;
-    const semMin = 6, semMax = 14;
+    const canvasRef = React.useRef(null);
+    const CRL_T = {6:{p5:3,p50:5,p95:9},7:{p5:6,p50:10,p95:15},8:{p5:10,p50:16,p95:22},9:{p5:15,p50:23,p95:31},10:{p5:21,p50:31,p95:41},11:{p5:28,p50:41,p95:53},12:{p5:36,p50:52,p95:66},13:{p5:46,p50:63,p95:80},14:{p5:56,p50:75,p95:94}};
     const sems = [6,7,8,9,10,11,12,13,14];
 
-    const allMm = sems.flatMap(s => [CRL_TABLE[s].p5, CRL_TABLE[s].p95]);
-    const mmMin = 0;
-    const mmMax = Math.max(...allMm) * 1.08;
+    React.useEffect(() => {
+      const canvas = canvasRef.current;
+      if(!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const W=canvas.width, H=canvas.height;
+      const PAD={l:36,r:30,t:16,b:36};
+      const cW=W-PAD.l-PAD.r, cH=H-PAD.t-PAD.b;
+      const mmMin=0, mmMax=100;
+      const xS=s=>PAD.l+(s-6)/(14-6)*cW;
+      const yS=v=>PAD.t+cH-(v-mmMin)/(mmMax-mmMin)*cH;
+      ctx.clearRect(0,0,W,H);
+      ctx.fillStyle='#f7fafc'; ctx.fillRect(0,0,W,H);
+      // Grid
+      [25,50,75].forEach(v=>{ctx.strokeStyle='#dce7ed';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(PAD.l,yS(v));ctx.lineTo(W-PAD.r,yS(v));ctx.stroke();});
+      // Curvas
+      const drawL=(q,color,w,dash)=>{ctx.strokeStyle=color;ctx.lineWidth=w;ctx.setLineDash(dash||[]);ctx.beginPath();sems.forEach((s,i)=>{if(i===0)ctx.moveTo(xS(s),yS(CRL_T[s][q]));else ctx.lineTo(xS(s),yS(CRL_T[s][q]));});ctx.stroke();ctx.setLineDash([]);};
+      drawL('p5','#e08080',1.5,[4,3]);
+      drawL('p95','#e08080',1.5,[4,3]);
+      drawL('p50','#1AA3B7',2.2);
+      // Labels
+      ctx.font='9px Inter,sans-serif'; ctx.fillStyle='#e08080'; ctx.textAlign='left';
+      ctx.fillText('p95',W-PAD.r+2,yS(CRL_T[14].p95)+4);
+      ctx.fillText('p5',W-PAD.r+2,yS(CRL_T[14].p5)+4);
+      ctx.fillStyle='#1AA3B7'; ctx.fillText('p50',W-PAD.r+2,yS(CRL_T[14].p50)+4);
+      // Punto
+      const ga_w = Math.max(6, Math.min(14, ga_weeks));
+      const px=xS(ga_w), py=yS(Math.max(0,Math.min(100,crl_mm)));
+      const cp = pct!==null ? (pct<5||pct>95?'#c0392b':pct<10||pct>90?'#d9822b':'#1f9d55') : '#1AA3B7';
+      ctx.beginPath();ctx.arc(px,py,6,0,Math.PI*2);ctx.fillStyle=cp;ctx.fill();ctx.strokeStyle='white';ctx.lineWidth=2;ctx.stroke();
+      if(pct!==null){ctx.font='bold 9px Inter,sans-serif';ctx.fillStyle=cp;ctx.textAlign=px>W*0.7?'right':'left';ctx.fillText(pct.toFixed(1)+'%',px>W*0.7?px-10:px+10,py-8);}
+      ctx.fillText(crl_mm+'mm',px>W*0.7?px-10:px+10,py+16);
+      // Eje X
+      ctx.font='9px Inter,sans-serif';ctx.fillStyle='#8aaec0';
+      sems.forEach(s=>{ctx.textAlign='center';ctx.fillText(s,xS(s),H-6);});
+      ctx.fillText('semanas',PAD.l+cW/2,H-4);
+      // Eje Y
+      ctx.textAlign='right';
+      [25,50,75].forEach(v=>{ctx.fillText(v,PAD.l-4,yS(v)+3);});
+    }, [crl_mm, ga_weeks, pct]);
 
-    const xScale = s => PAD.l + (s - semMin) / (semMax - semMin) * chartW;
-    const yScale = v => PAD.t + chartH - (v - mmMin) / (mmMax - mmMin) * chartH;
-    const pathFrom = pts => 'M' + pts.map(p => xScale(p.w).toFixed(1)+','+yScale(p.v).toFixed(1)).join(' L');
-
-    const p5pts  = sems.map(s => ({w:s, v:CRL_TABLE[s].p5}));
-    const p50pts = sems.map(s => ({w:s, v:CRL_TABLE[s].p50}));
-    const p95pts = sems.map(s => ({w:s, v:CRL_TABLE[s].p95}));
-
-    const ga_w = ga_weeks || 10;
-    const px = xScale(Math.max(semMin, Math.min(semMax, ga_w)));
-    const py = yScale(Math.max(0, Math.min(mmMax, crl_mm)));
-
-    const colorP = pct < 5 || pct > 95 ? '#c0392b' : pct < 10 || pct > 90 ? '#d9822b' : '#1AA3B7';
-
-    return e('div',{style:{marginTop:14,background:'#f7fafc',borderRadius:16,padding:'10px 8px 6px'}},
-      e('div',{style:{fontSize:11,color:'#3b6f8a',marginBottom:4}},
-        'LCN ',crl_mm,' mm · EG estimada: ',crlToGA(crl_mm).weeks,'+',crlToGA(crl_mm).d,' sem',
-        pct !== null ? e('span',{style:{marginLeft:8,fontWeight:700,color:colorP}},pct.toFixed(1),'%') : null
-      ),
-      e('svg',{viewBox:"0 0 "+W+" "+H,style:{width:'100%',height:'auto',overflow:'visible'}},
-        // Grid
-        [0,25,50,75].map((v,i) =>
-          e('line',{key:'g'+i,x1:PAD.l,y1:yScale(v),x2:W-PAD.r,y2:yScale(v),stroke:'#dce7ed',strokeWidth:1})
-        ),
-        // Curvas
-        e('path',{d:pathFrom(p5pts), fill:'none', stroke:'#f0a0a0', strokeWidth:1.5, strokeDasharray:'4,3'}),
-        e('path',{d:pathFrom(p50pts), fill:'none', stroke:'#1AA3B7', strokeWidth:2.2}),
-        e('path',{d:pathFrom(p95pts), fill:'none', stroke:'#f0a0a0', strokeWidth:1.5, strokeDasharray:'4,3'}),
-        // Labels curvas
-        e('text',{x:W-PAD.r+2,y:yScale(CRL_TABLE[14].p95)+4,fontSize:8,fill:'#f0a0a0'},'p95'),
-        e('text',{x:W-PAD.r+2,y:yScale(CRL_TABLE[14].p50)+4,fontSize:8,fill:'#1AA3B7'},'p50'),
-        e('text',{x:W-PAD.r+2,y:yScale(CRL_TABLE[14].p5)+4,fontSize:8,fill:'#f0a0a0'},'p5'),
-        // Punto paciente
-        e('circle',{cx:px,cy:py,r:6,fill:colorP,stroke:'white',strokeWidth:2}),
-        e('text',{x:px+(px>W*0.7?-8:8),y:py-8,fontSize:9,fontWeight:'bold',fill:colorP,textAnchor:px>W*0.7?'end':'start'},
-          crl_mm,'mm'
-        ),
-        // Eje X
-        sems.map((s,i) => e('text',{key:'x'+i,x:xScale(s),y:H-4,fontSize:8,fill:'#8aaec0',textAnchor:'middle'},s)),
-        e('text',{x:PAD.l+chartW/2,y:H+2,fontSize:8,fill:'#8aaec0',textAnchor:'middle'},'semanas'),
-        // Eje Y
-        [0,25,50,75].map((v,i) =>
-          e('text',{key:'y'+i,x:PAD.l-3,y:yScale(v)+3,fontSize:8,fill:'#8aaec0',textAnchor:'end'},v)
-        )
-      )
+    return e('div',{style:{marginTop:10,borderRadius:12,overflow:'hidden',border:'1px solid #dce7ed'}},
+      e('canvas',{ref:canvasRef,width:320,height:180,style:{width:'100%',height:'auto',display:'block'}})
     );
   };
 
@@ -1222,77 +1211,61 @@
   };
 
   const BiomChart = ({dim, mm, ga, pct}) => {
-    const p5  = buildBiomCurve(dim, 0.05);
-    const p50 = buildBiomCurve(dim, 0.50);
-    const p95 = buildBiomCurve(dim, 0.95);
+    const canvasRef = React.useRef(null);
+    const COEF3 = {
+      BPD:{p5:[6.40086541374477e-1,2.5352855332296e-1,-5.91651627062447e-3,4.94614232987744e-5,0],p50:[8.72984231314326e-1,2.43385003540798e-1,-5.71172523683453e-3,4.82880035733658e-5,0],p95:[1.11401192681678,2.28258457814188e-1,-5.24271052970102e-3,4.31665697359201e-5,0]},
+      HC:{p5:[1.74883945698398,2.78405280785763e-1,-6.77990950687641e-3,5.83587774721548e-5,0],p50:[2.09924879247164,2.53373656106037e-1,-6.05647816678282e-3,5.14256072059917e-5,0],p95:[2.39550106176494,2.29586666082063e-1,-5.25318141633775e-3,4.23738937924844e-5,0]},
+      AC:{p5:[1.09869954558741,3.30079995799838e-1,-8.62095843727276e-3,8.25440120054722e-5,0],p50:[1.58552931028045,2.89936781915424e-1,-7.32651929135797e-3,6.9261631643994e-5,0],p95:[1.83213806223649,2.77106952998102e-1,-7.03388540291938e-3,6.76124200964958e-5,0]},
+      FL:{p5:[-7.07052933404414,1.26780052700097,-5.77556347769781e-2,1.21608381996396e-3,-9.70361787292646e-6],p50:[-5.54922620776446,1.09559990166124,-5.01310925949098e-2,1.0678072569586e-3,-8.63970606288493e-6],p95:[-4.12398207550525,9.20344210800571e-1,-4.15728969581384e-2,8.81055511995407e-4,-7.10843959625547e-6]}
+    };
+    const ep = (c,g) => c[0]+c[1]*g+c[2]*g*g+c[3]*g*g*g+c[4]*g*g*g*g;
+    const curve = (d,q) => { const r=[]; for(let w=14;w<=42;w++) r.push({w,mm:Math.exp(ep(COEF3[d][q],w))}); return r; };
 
-    const W = 320, H = 160;
-    const PAD = {l:32, r:12, t:14, b:24};
-    const chartW = W - PAD.l - PAD.r;
-    const chartH = H - PAD.t - PAD.b;
-    const semMin = 14, semMax = 42;
+    React.useEffect(() => {
+      const canvas = canvasRef.current;
+      if(!canvas || pct===null || pct===undefined) return;
+      const ctx = canvas.getContext('2d');
+      const W=canvas.width, H=canvas.height;
+      const PAD={l:36,r:30,t:16,b:36};
+      const cW=W-PAD.l-PAD.r, cH=H-PAD.t-PAD.b;
+      const p5=curve(dim,'p5'), p50=curve(dim,'p50'), p95=curve(dim,'p95');
+      const allMm=[...p5.map(d=>d.mm),...p95.map(d=>d.mm)];
+      const mmMin=Math.min(...allMm)*0.97, mmMax=Math.max(...allMm)*1.03;
+      const xS=s=>PAD.l+(s-14)/(42-14)*cW;
+      const yS=v=>PAD.t+cH-(v-mmMin)/(mmMax-mmMin)*cH;
+      ctx.clearRect(0,0,W,H);
+      ctx.fillStyle='white'; ctx.fillRect(0,0,W,H);
+      // Grid
+      [0.2,0.4,0.6,0.8].forEach(f=>{ctx.strokeStyle='#dce7ed';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(PAD.l,PAD.t+cH*(1-f));ctx.lineTo(W-PAD.r,PAD.t+cH*(1-f));ctx.stroke();});
+      // Curvas
+      const drawL=(pts,color,w,dash)=>{ctx.strokeStyle=color;ctx.lineWidth=w;ctx.setLineDash(dash||[]);ctx.beginPath();pts.forEach((d,i)=>{if(i===0)ctx.moveTo(xS(d.w),yS(d.mm));else ctx.lineTo(xS(d.w),yS(d.mm));});ctx.stroke();ctx.setLineDash([]);};
+      drawL(p5,'#e08080',1.5,[4,3]);
+      drawL(p95,'#e08080',1.5,[4,3]);
+      drawL(p50,'#1AA3B7',2.2);
+      // Labels curvas
+      ctx.font='9px Inter,sans-serif'; ctx.textAlign='left';
+      ctx.fillStyle='#e08080'; ctx.fillText('p5',W-PAD.r+2,yS(p5[p5.length-1].mm)+4);
+      ctx.fillText('p95',W-PAD.r+2,yS(p95[p95.length-1].mm)+4);
+      ctx.fillStyle='#1AA3B7'; ctx.fillText('p50',W-PAD.r+2,yS(p50[p50.length-1].mm)+4);
+      // Punto
+      const px=xS(ga), py=yS(mm);
+      const cp=pct<3||pct>97?'#c0392b':pct<10||pct>90?'#d9822b':'#1f9d55';
+      ctx.beginPath();ctx.arc(px,py,6,0,Math.PI*2);ctx.fillStyle=cp;ctx.fill();ctx.strokeStyle='white';ctx.lineWidth=2;ctx.stroke();
+      ctx.font='bold 9px Inter,sans-serif';ctx.fillStyle=cp;
+      ctx.textAlign=px>W*0.7?'right':'left';
+      ctx.fillText(pct.toFixed(1)+'%',px>W*0.7?px-10:px+10,py-8);
+      // Eje X
+      ctx.font='9px Inter,sans-serif';ctx.fillStyle='#8aaec0';
+      [16,20,24,28,32,36,40].forEach(s=>{ctx.textAlign='center';ctx.fillText(s,xS(s),H-6);});
+      ctx.fillText('semanas',PAD.l+cW/2,H-4);
+      // Eje Y
+      ctx.textAlign='right';
+      [0.2,0.5,0.8].forEach(f=>{const v=mmMin+(mmMax-mmMin)*f;ctx.fillText(Math.round(v),PAD.l-4,PAD.t+cH*(1-f)+3);});
+    }, [dim, mm, ga, pct]);
 
-    const allMm = [...p5.map(d=>d.mm), ...p95.map(d=>d.mm)];
-    const mmMin = Math.min(...allMm) * 0.95;
-    const mmMax = Math.max(...allMm) * 1.05;
-
-    const xScale = s => PAD.l + (s - semMin) / (semMax - semMin) * chartW;
-    const yScale = v => PAD.t + chartH - (v - mmMin) / (mmMax - mmMin) * chartH;
-
-    const pathFrom = pts => 'M' + pts.map(d => xScale(d.w).toFixed(1)+','+yScale(d.mm).toFixed(1)).join(' L');
-
-    // Punto del paciente
-    const px = xScale(ga);
-    const py = yScale(mm);
-
-    // Labels eje X
-    const xTicks = [16, 20, 24, 28, 32, 36, 40];
-    // Labels eje Y (3 valores)
-    const yTicks = [
-      { v: mmMin + (mmMax-mmMin)*0.1, label: Math.round(mmMin + (mmMax-mmMin)*0.1) },
-      { v: mmMin + (mmMax-mmMin)*0.5, label: Math.round(mmMin + (mmMax-mmMin)*0.5) },
-      { v: mmMin + (mmMax-mmMin)*0.9, label: Math.round(mmMin + (mmMax-mmMin)*0.9) },
-    ];
-
-    const p = pct !== null && pct !== undefined ? pct : 50;
-    const colorP = p < 3 || p > 97 ? '#c0392b' : p < 10 || p > 90 ? '#d9822b' : '#1AA3B7';
-
-    return e('div',{style:{marginTop:12,background:'#f7fafc',borderRadius:16,padding:'10px 8px 6px'}},
-      e('div',{style:{fontSize:11,fontWeight:700,color:'#3b6f8a',marginBottom:4,textTransform:'uppercase',letterSpacing:'0.4px'}},
-        dim,' — ',mm,' mm · ',e('span',{style:{color:colorP}},pct.toFixed(1),'%')
-      ),
-      e('svg',{viewBox:"0 0 "+W+" "+H,style:{width:'100%',height:'auto',overflow:'visible'}},
-        // Grid lines horizontales sutiles
-        yTicks.map((t,i) =>
-          e('line',{key:'gy'+i, x1:PAD.l, y1:yScale(t.v), x2:W-PAD.r, y2:yScale(t.v),
-            stroke:'#dce7ed', strokeWidth:1})
-        ),
-        // Curvas percentiles
-        e('path',{d:pathFrom(p5), fill:'none', stroke:'#f0a0a0', strokeWidth:1.5, strokeDasharray:'4,3'}),
-        e('path',{d:pathFrom(p50), fill:'none', stroke:'#1AA3B7', strokeWidth:2}),
-        e('path',{d:pathFrom(p95), fill:'none', stroke:'#f0a0a0', strokeWidth:1.5, strokeDasharray:'4,3'}),
-        // Labels curvas
-        e('text',{x:W-PAD.r+2, y:yScale(p5[p5.length-1].mm)+4, fontSize:8, fill:'#f0a0a0'},'p5'),
-        e('text',{x:W-PAD.r+2, y:yScale(p50[p50.length-1].mm)+4, fontSize:8, fill:'#1AA3B7'},'p50'),
-        e('text',{x:W-PAD.r+2, y:yScale(p95[p95.length-1].mm)+4, fontSize:8, fill:'#f0a0a0'},'p95'),
-        // Punto paciente
-        e('circle',{cx:px, cy:py, r:6, fill:colorP, stroke:'white', strokeWidth:2}),
-        // Label del punto
-        e('text',{x:px+(px>W*0.7?-8:8), y:py-8, fontSize:9, fontWeight:'bold', fill:colorP,
-          textAnchor:px>W*0.7?'end':'start'},
-          pct.toFixed(1),'%'
-        ),
-        // Eje X ticks
-        xTicks.map((s,i) =>
-          e('text',{key:'xt'+i, x:xScale(s), y:H-4, fontSize:8, fill:'#8aaec0', textAnchor:'middle'},s)
-        ),
-        // Eje Y ticks
-        yTicks.map((t,i) =>
-          e('text',{key:'yt'+i, x:PAD.l-3, y:yScale(t.v)+3, fontSize:8, fill:'#8aaec0', textAnchor:'end'},t.label)
-        ),
-        // Label eje X
-        e('text',{x:PAD.l+chartW/2, y:H+2, fontSize:8, fill:'#8aaec0', textAnchor:'middle'},'semanas')
-      )
+    if(pct===null||pct===undefined) return null;
+    return e('div',{style:{marginTop:8,borderRadius:12,overflow:'hidden',border:'1px solid #dce7ed'}},
+      e('canvas',{ref:canvasRef,width:320,height:180,style:{width:'100%',height:'auto',display:'block'}})
     );
   };
 
