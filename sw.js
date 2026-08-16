@@ -1,11 +1,10 @@
-const CACHE = 'fetalmetrics-v1';
+const CACHE = 'fetalmetrics-v2';
 const ASSETS = [
   '/fetalmetrics/',
   '/fetalmetrics/index.html',
   '/fetalmetrics/manifest.json',
-  'https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap',
-  'https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.development.js',
-  'https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.development.js'
+  '/fetalmetrics/icon-192.png',
+  '/fetalmetrics/icon-512.png'
 ];
 
 self.addEventListener('install', ev => {
