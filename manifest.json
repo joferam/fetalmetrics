@@ -1,7 +1,8 @@
 {
+  "id": "/fetalmetrics/",
   "name": "FetalMetrics",
   "short_name": "FetalMetrics",
-  "description": "Calculadora obstétrica: LCN, edad gestacional, crecimiento fetal y biometría OMS",
+  "description": "Calculadora obstétrica clínica: LCN, edad gestacional, crecimiento fetal y biometría OMS. Referencia FMF, ISUOG y Kiserud 2017.",
   "start_url": "/fetalmetrics/",
   "scope": "/fetalmetrics/",
   "display": "standalone",
